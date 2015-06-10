@@ -8,6 +8,23 @@ ARQUITETURA:
 CICLOS:
 	add 2
 	add.i 1
+    sub 2
+    sub.i 1
+    mult 2
+    mult.i 1
+    div 2
+    div.i 1
+    ld 2
+    sd 2
+    beq 1
+    bne 1
 
 Texto:
-<programa>
+add T0, T1, T3
+add T1, T2, T3
+sub T4, T5, T3
+ld FA, RA
+mult T2, T4, T5
+div T0, T3, T2
+add T5, T4, T3
+sd RA, FA
