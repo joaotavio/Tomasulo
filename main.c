@@ -4,7 +4,7 @@
 #include <string.h>
 #include <locale.h>
 #include <wchar.h>
-#include <ctype.h>
+#include "util.h"
 #include "fila.h"
 
 #define NUM_OPERACOES 12
@@ -14,6 +14,7 @@
 typedef enum operacoes {OP_INVALIDO, ld, sd, beq, bne, add, addi, sub, subi, mult, multi, Div, divi} Operacoes;
 
 typedef struct instrucao {
+    //guardar id da instrucao para quando tiver dependencia verdadeira
     Operacoes opcode;
     char *op1; //MUDAR ESSES NOMES e mudar o tipo
     char *op2;
@@ -43,12 +44,6 @@ int ciclo_ld;
 int ciclo_sd;
 
 int cont_ciclos;
-
-void strMinuscula(char str[]){
-    int i;
-    for (i = 0; i < strlen(str); ++i)
-        str[i] = tolower(str[i]);
-}
 
 bool decodificaComponente(char str[], int valor){ //MUDAR NOME
     strMinuscula(str);
@@ -209,7 +204,8 @@ Instrucao decodificaString(char str[]){ //mudar nome
     char *operandos[3];
 
     opcode = strtok(str, " ");
-
+    strMinuscula(opcode);
+    
     int i;
     for (i = 0; i < 3; i++)
         operandos[i] = strtok(NULL, " ,");
@@ -318,6 +314,11 @@ bool lerInstrucoes(FILE* arquivo){
     }
 
     return true;
+}
+
+void printCiclo(){
+    //printa oq esta acontecendo em cada ciclo
+    //tentar fazer em forma de tabela    
 }
 
 void iniciar(){
