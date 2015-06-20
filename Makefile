@@ -4,14 +4,20 @@ RM     = rm
 #------------------------------------------------
 
 # chama o linker
-tomasulo:  main.o fila.o util.o
-	$(CC) main.o fila.o util.o -o tomasulo
+tomasulo:  main.o tomasulo.o arquivo.o componente.o util.o
+	$(CC) main.o tomasulo.o arquivo.o componente.o util.o -o tomasulo
 
-main.o: main.c fila.h util.h
+main.o: main.c tomasulo.h arquivo.h
 	$(CC) $(CFLAGS) -c main.c 
 
-fila.o: fila.c fila.h
-	$(CC) $(CFLAGS) -c fila.c 
+tomasulo.o: tomasulo.c tomasulo.h componente.h instrucao.h
+	$(CC) $(CFLAGS) -c tomasulo.c 
+
+arquivo.o: arquivo.c arquivo.h tomasulo.h instrucao.h
+	$(CC) $(CFLAGS) -c arquivo.c 
+
+componente.o: componente.c componente.h instrucao.h
+	$(CC) $(CFLAGS) -c componente.c 
 
 util.o: util.c util.h
 	$(CC) $(CFLAGS) -c util.c 
