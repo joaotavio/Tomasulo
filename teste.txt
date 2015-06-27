@@ -22,11 +22,12 @@ CICLOS:
     bne 1
 
 Texto:
-add T0, T1, T3CORRIGIR|ESSE|ERRO|AQUI
-add T1, T2, T3
-sub T4, T5, T3
-ld FA, RA
-mult T2, T4, T5
-div T0, T3, T2
-add T5, T4, T3
-sd RA, FA
+add R0, R1, R30
+addi R9, R2, -100
+add R4, R5, R6
+sub R7, R8, R9
+ld R10, 100
+mult R11, R12, R13
+div R15, R16, R17
+add R18, R19, R20
+sd 123, R22

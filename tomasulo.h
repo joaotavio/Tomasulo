@@ -2,11 +2,11 @@
 #define TOMASULO_H
 
 #include "componente.h"
+#include "memoria.h"
 
-//mudar defines de lugar pra arquivo se nao for usar aqui
-#define NUM_COMPONENTES 7 //MUDAR
+#define NUM_COMPONENTES 7
 
-#define TAM_MEMORIA 100
+#define NUM_REGISTRADOR 32
 
 /*** VARIÁVEIS GLOBAIS ***/
 
@@ -41,8 +41,5 @@ extern Componente somador;
 extern Componente multiplicador;
 extern Componente divisor;
 
-extern char memoria[TAM_MEMORIA][100]; //fazer estrutura melhor para memoria
-
-void insereMemoria(char memoria[][100], char valor[]);
 
 #endif

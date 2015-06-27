@@ -3,15 +3,15 @@
 
 #define NUM_OPERACOES 12
 
-typedef enum operacoes {OP_INVALIDO, ld, sd, beq, bne, add, addi, sub, subi, mult, multi, Div, divi} Operacoes;
+typedef enum operacoes {LD, SD, BEQ, BNE, ADD, ADDI, SUB, SUBI, MULT, MULTI, DIV, DIVI} Operacoes;
 
 typedef struct instrucao {
     //guardar id da instrucao para quando tiver dependencia verdadeira
     int id;
     Operacoes opcode;
-    char *op1; //MUDAR ESSES NOMES e mudar o tipo
-    char *op2;
-    char *op3;
+    int dest;
+    int op1;
+    int op2;
 } Instrucao;
 
 #endif

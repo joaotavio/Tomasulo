@@ -2,18 +2,32 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <locale.h>
 #include <wchar.h>
+#include <ctype.h>
 #include "util.h"
 #include "tomasulo.h"
 #include "instrucao.h"
+#include "memoria.h"
 
-#define MAX_TAM_LINHA 100
+#define MAX_TAM_LINHA 50
+
+/*void lerLinha(char buffer[], FILE* arquivo){
+    fgets(buffer, MAX_TAM_LINHA, arquivo);
+
+    while (isspace(buffer[0]))
+        fgets(buffer, MAX_TAM_LINHA, arquivo);
+
+    int tamanho = strlen(buffer);
+
+    while (isspace(buffer[tamanho - 1]))
+        buffer[--tamanho] = '\0';
+}*/
 
 bool decodificaComponente(char str[], int valor){ //MUDAR NOME
     strMinuscula(str);
 
-    mbstate_t ss1 = 0;
+    mbstate_t ss1;
+    memset(&ss1, '\0', sizeof(ss1));
     wchar_t wstr[MAX_TAM_LINHA];
     const char *pmbs1 = str;
     mbsrtowcs(wstr, &pmbs1, MAX_TAM_LINHA, &ss1);
@@ -46,11 +60,13 @@ bool decodificaComponente(char str[], int valor){ //MUDAR NOME
     return true;
 }
 
+//talvez fazer funcao generalizada para ler cabecalho
 bool lerCabecalhoArquitetura(FILE* arquivo){
     char buffer[MAX_TAM_LINHA];
     int valor;
+    int tamanho;
 
-    fscanf(arquivo, " %100[^\n]", buffer);
+    fscanf(arquivo, " %100[^\n\r ]", buffer);
     strMinuscula(buffer);
     if (strcmp(buffer, "arquitetura:") != 0)
         return false;
@@ -61,7 +77,11 @@ bool lerCabecalhoArquitetura(FILE* arquivo){
     for (i = 0; i < NUM_COMPONENTES; ++i) {
         if (fscanf(arquivo, " %100[^0-9] %d", buffer, &valor) != 2)
             return false;
-        buffer[strlen(buffer)-1] = '\0';
+        tamanho = strlen(buffer);
+
+        while (isblank(buffer[tamanho - 1]))
+            buffer[--tamanho] = '\0';
+
         if (!decodificaComponente(buffer, valor))
             return false;
         printf("  %s --- %d\n", buffer, valor);
@@ -119,8 +139,9 @@ bool decodificaCiclo(char str[], int valor){ //MUDAR NOME
 bool lerCabecalhoCiclos(FILE* arquivo){
     char buffer[MAX_TAM_LINHA];
     int valor;
+    int tamanho;
 
-    fscanf(arquivo, " %100[^\n]", buffer);
+    fscanf(arquivo, " %100[^\n\r ]", buffer);
     strMinuscula(buffer);
     if (strcmp(buffer, "ciclos:") != 0)
         return false;
@@ -131,7 +152,12 @@ bool lerCabecalhoCiclos(FILE* arquivo){
     for (i = 0; i < NUM_OPERACOES; ++i) {
         if (fscanf(arquivo, " %100[^0-9] %d", buffer, &valor) != 2)
             return false;
-        buffer[strlen(buffer)-1] = '\0';
+
+        tamanho = strlen(buffer);
+
+        while (isblank(buffer[tamanho - 1]))
+            buffer[--tamanho] = '\0';
+
         if (!decodificaCiclo(buffer, valor))
             return false;
         printf("  %s --- %d\n", buffer, valor);
@@ -150,8 +176,41 @@ bool lerCabecalho(FILE* arquivo){
     return true;
 }
 
-Instrucao decodificaString(char str[]){ //mudar nome
-    Instrucao inst = {0};
+//MUDAR ESSE NOME TAMBEM
+bool decodificaOperando(char str[], int *retorno, bool imediato){
+    int i;
+    char numero[strlen(str)];
+    if (imediato){
+        if (!isNumero(str))
+            return false;
+        
+        *retorno = atoi(str);
+    }
+    else {
+        if (str[0] == 'R' || str[0] == 'r'){
+            for (i = 0; i < strlen(str); i++){
+                numero[i] = str[i+1];
+            }
+            numero[i] = '\0';
+            
+            if (!isNumero(numero))
+                return false;
+
+            *retorno = atoi(numero);
+
+            if (*retorno < 0 || *retorno >= NUM_REGISTRADOR)
+                return false;
+        }
+        else {
+            return false;
+        }
+    }
+
+    //se numero do registrador lido for maior que 32 retornar falso
+    return true;
+}
+
+bool decodificaInstrucao(char str[], Instrucao *inst){ //mudar nome
     char *opcode;
     char *operandos[3];
     char str_copia[MAX_TAM_LINHA];
@@ -160,116 +219,166 @@ Instrucao decodificaString(char str[]){ //mudar nome
 
     opcode = strtok(str_copia, " ");
     strMinuscula(opcode);
-    
+
     int i;
     for (i = 0; i < 3; i++)
         operandos[i] = strtok(NULL, " ,");
 
+    if (strtok(NULL, " ,") != NULL)
+        return false;
+
     if (operandos[0] != NULL && operandos[1] != NULL){
         if (operandos[2] != NULL){
             if (strcmp(opcode, "add") == 0){
-                inst.opcode = add;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                    return false;
+                if (!decodificaOperando(operandos[2], &inst->op2, false))
+                    return false;
+                inst->opcode = ADD;
             }
-            else if (strcmp(opcode, "add.i") == 0){
-                inst.opcode = addi;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+            else if (strcmp(opcode, "addi") == 0){
+                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                    return false;
+                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                    return false;
+                inst->opcode = ADDI;
             }
             else if (strcmp(opcode, "sub") == 0){
-                inst.opcode = sub;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                    return false;
+                if (!decodificaOperando(operandos[2], &inst->op2, false))
+                    return false;
+                inst->opcode = SUB;
             }
-            else if (strcmp(opcode, "sub.i") == 0){
-                inst.opcode = subi;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+            else if (strcmp(opcode, "subi") == 0){
+                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                    return false;
+                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                    return false;
+                inst->opcode = SUBI;
             }
             else if (strcmp(opcode, "mult") == 0){
-                inst.opcode = mult;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                    return false;
+                if (!decodificaOperando(operandos[2], &inst->op2, false))
+                    return false;
+                inst->opcode = MULT;
             }
-            else if (strcmp(opcode, "mult.i") == 0){
-                inst.opcode = multi;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+            else if (strcmp(opcode, "multi") == 0){
+                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                    return false;
+                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                    return false;
+                inst->opcode = MULTI;
             }
             else if (strcmp(opcode, "div") == 0){
-                inst.opcode = Div;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                    return false;
+                if (!decodificaOperando(operandos[2], &inst->op2, false))
+                    return false;
+                inst->opcode = DIV;
             }
-            else if (strcmp(opcode, "div.i") == 0){
-                inst.opcode = divi;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+            else if (strcmp(opcode, "divi") == 0){
+                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                    return false;
+                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                    return false;
+                inst->opcode = DIVI;
             }
             else if (strcmp(opcode, "beq") == 0){
-                inst.opcode = beq;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                    return false;
+                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                    return false;
+                inst->opcode = BEQ;
             }
             else if (strcmp(opcode, "bne") == 0){
-                inst.opcode = bne;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                    return false;
+                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                    return false;
+                inst->opcode = BNE;
+            }
+            else {
+                return false;
             }
         }
         else {
             if (strcmp(opcode, "ld") == 0){
-                inst.opcode = ld;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, true))
+                    return false;
+                if (inst->op1 < 0)
+                    return false;
+                inst->opcode = LD;
             }
             else if (strcmp(opcode, "sd") == 0){
-                inst.opcode = sd;
-                inst.op1 = operandos[0];
-                inst.op2 = operandos[1];
-                inst.op3 = operandos[2];
+                if (!decodificaOperando(operandos[0], &inst->dest, true))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                    return false;
+                if (inst->dest < 0)
+                    return false;
+                inst->opcode = SD;
+            }
+            else {
+                return false;
             }
         }
     }
+    else {
+        return false;
+    }
     
-    return inst;
+    return true;
 }
 
 bool lerInstrucoes(FILE* arquivo){
     char buffer[MAX_TAM_LINHA];
     Instrucao inst;
 
-    fscanf(arquivo, " %100[^\n]", buffer);
+    fscanf(arquivo, " %100[^\n\r ]", buffer);
     strMinuscula(buffer);
     if (strcmp(buffer, "texto:") != 0)
         return false;
     
     printf("\n%s\n", buffer);
 
+    int i = 0;
     while (!feof(arquivo)){
-        if (fscanf(arquivo, " %100[^\n]", buffer) != 1)
+        inst = (Instrucao){0};
+        if (fscanf(arquivo, " %100[^\n\r]", buffer) != 1)
             return true;
 
-        inst = decodificaString(buffer);
-        if (inst.opcode == OP_INVALIDO)
+        if (!decodificaInstrucao(buffer, &inst))
             return false;
         
-        insereMemoria(memoria, buffer);
+        memoriaInsereInst(inst, i);
 
-        printf("%s\n", buffer);
-        //printf("%d %s %s %s\n", inst.opcode, inst.op1, inst.op2, inst.op3);
+        //printf("%s\n", buffer);
+        printf("%d R%d, R%d, R%d\n", inst.opcode, inst.dest, inst.op1, inst.op2);
+        i++;
     }
 
     return true;

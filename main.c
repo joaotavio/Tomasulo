@@ -5,8 +5,11 @@
 #include "tomasulo.h"
 
 void printCiclo(){
-    //printa oq esta acontecendo em cada ciclo
-    //tentar fazer em forma de tabela
+    
+}
+
+void printRegistrador(){
+
 }
 
 void destruirComponentes(){
@@ -30,6 +33,7 @@ void iniciarComponentes(){
 }
 
 void iniciar(){
+    //lembrar de quando tentar abrir arquivo q nao existe tratar erro
     FILE* arquivo;
     arquivo = fopen("teste.txt", "r");
 
@@ -39,6 +43,8 @@ void iniciar(){
         return;
     }
     fclose(arquivo);
+
+    printMemoria();
 
     iniciarComponentes();
 

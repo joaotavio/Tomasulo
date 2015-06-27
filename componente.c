@@ -104,6 +104,8 @@ Instrucao componenteRemoveEspecifico(Componente comp, int id){
     return retorno;
 }
 
+
+//MELHORAR O PRINT DESSA FUNCAO
 void mostraComponente(Componente comp){
     if (componenteEstaVazio(comp)){
         printf("Componente vazio.\n");
@@ -116,9 +118,9 @@ void mostraComponente(Componente comp){
     while(aux != NULL){
         printf("ID: %d\n", aux->dado.id);
         printf("OPCODE: %d\n", aux->dado.opcode);
-        printf("OP1: %s\n", aux->dado.op1);
-        printf("OP2: %s\n", aux->dado.op2);
-        printf("OP3: %s\n\n", aux->dado.op3);
+        printf("DEST: %d\n", aux->dado.dest);
+        printf("OP1: %d\n", aux->dado.op1);
+        printf("OP2: %d\n\n", aux->dado.op2);
         aux = aux->prox;
     }
 }

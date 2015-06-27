@@ -3,7 +3,6 @@
 #include <string.h>
 #include "tomasulo.h"
 
-
 /*** VARIÁVEIS GLOBAIS ***/
 
 int qtd_somador;
@@ -36,17 +35,3 @@ Componente store;
 Componente somador;
 Componente multiplicador;
 Componente divisor;
-
-char memoria[TAM_MEMORIA][100];
-
-void insereMemoria(char memoria[][100], char valor[]){
-    int i = 0;
-    while (strlen(memoria[i]) != 0)
-        i++;
-
-    if (i < TAM_MEMORIA)
-        strcpy(memoria[i], valor);
-    else
-        printf("ERRO: Memoria esta cheia.\n");
-}
-
