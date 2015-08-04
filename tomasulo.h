@@ -5,7 +5,6 @@
 #include "memoria.h"
 
 #define NUM_COMPONENTES 7
-
 #define NUM_REGISTRADOR 32
 
 /*** VARIÁVEIS GLOBAIS ***/

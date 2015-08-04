@@ -2,7 +2,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h>
 #include <ctype.h>
 #include "util.h"
 #include "tomasulo.h"
@@ -11,46 +10,28 @@
 
 #define MAX_TAM_LINHA 50
 
-/*void lerLinha(char buffer[], FILE* arquivo){
-    fgets(buffer, MAX_TAM_LINHA, arquivo);
-
-    while (isspace(buffer[0]))
-        fgets(buffer, MAX_TAM_LINHA, arquivo);
-
-    int tamanho = strlen(buffer);
-
-    while (isspace(buffer[tamanho - 1]))
-        buffer[--tamanho] = '\0';
-}*/
-
 bool decodificaComponente(char str[], int valor){ //MUDAR NOME
     strMinuscula(str);
 
-    mbstate_t ss1;
-    memset(&ss1, '\0', sizeof(ss1));
-    wchar_t wstr[MAX_TAM_LINHA];
-    const char *pmbs1 = str;
-    mbsrtowcs(wstr, &pmbs1, MAX_TAM_LINHA, &ss1);
-
-    if (wcsncmp(wstr, L"somador", MAX_TAM_LINHA) == 0){
+    if (strcmp(str, "somador") == 0){
         qtd_somador = valor;
     }
-    else if (wcsncmp(wstr, L"multiplicador", MAX_TAM_LINHA) == 0){
+    else if (strcmp(str, "multiplicador") == 0){
         qtd_multiplicador = valor;
     }
-    else if (wcsncmp(wstr, L"divisor", MAX_TAM_LINHA) == 0){
+    else if (strcmp(str, "divisor") == 0){
         qtd_divisor = valor;
     }
-    else if (wcsncmp(wstr, L"busca de instruções", MAX_TAM_LINHA) == 0){
+    else if (strcmp(str, "busca de instrucoes") == 0){
         qtd_busca_inst = valor;
     }
-    else if (wcsncmp(wstr, L"janela de instruções", MAX_TAM_LINHA) == 0){
+    else if (strcmp(str, "janela de instrucoes") == 0){
         qtd_janela_inst = valor;
     }
-    else if (wcsncmp(wstr, L"buffer de carga", MAX_TAM_LINHA) == 0){
+    else if (strcmp(str, "buffer de carga") == 0){
         qtd_buffer_carga = valor;
     }
-    else if (wcsncmp(wstr, L"buffer de escrita", MAX_TAM_LINHA) == 0){
+    else if (strcmp(str, "buffer de escrita") == 0){
         qtd_buffer_escrita = valor;
     }
     else {
@@ -178,7 +159,6 @@ bool lerCabecalho(FILE* arquivo){
 
 //MUDAR ESSE NOME TAMBEM
 bool decodificaOperando(char str[], int *retorno, bool imediato){
-    int i;
     char numero[strlen(str)];
     if (imediato){
         if (!isNumero(str))
@@ -187,12 +167,7 @@ bool decodificaOperando(char str[], int *retorno, bool imediato){
         *retorno = atoi(str);
     }
     else {
-        if (str[0] == 'R' || str[0] == 'r'){
-            for (i = 0; i < strlen(str); i++){
-                numero[i] = str[i+1];
-            }
-            numero[i] = '\0';
-            
+        if (sscanf(str, "r%s", numero) == 1){
             if (!isNumero(numero))
                 return false;
 
@@ -206,11 +181,11 @@ bool decodificaOperando(char str[], int *retorno, bool imediato){
         }
     }
 
-    //se numero do registrador lido for maior que 32 retornar falso
     return true;
 }
 
 bool decodificaInstrucao(char str[], Instrucao *inst){ //mudar nome
+    strMinuscula(str);
     char *opcode;
     char *operandos[3];
     char str_copia[MAX_TAM_LINHA];
@@ -218,7 +193,6 @@ bool decodificaInstrucao(char str[], Instrucao *inst){ //mudar nome
     strcpy(str_copia, str);
 
     opcode = strtok(str_copia, " ");
-    strMinuscula(opcode);
 
     int i;
     for (i = 0; i < 3; i++)
