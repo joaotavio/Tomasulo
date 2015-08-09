@@ -1,5 +1,5 @@
 CC     = gcc
-CFLAGS = -Wall
+CFLAGS = -Wall -std=c99 -Wno-unused-result
 LDFLAGS = -lm
 RM     = rm
 #------------------------------------------------

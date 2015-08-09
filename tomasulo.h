@@ -4,7 +4,7 @@
 #include "componente.h"
 #include "memoria.h"
 
-#define NUM_COMPONENTES 7
+#define NUM_COMPONENTES 9
 #define NUM_REGISTRADOR 32
 
 /*** VARIÁVEIS GLOBAIS ***/
@@ -16,6 +16,9 @@ extern int qtd_busca_inst;
 extern int qtd_janela_inst;
 extern int qtd_buffer_carga;
 extern int qtd_buffer_escrita;
+extern int qtd_emissao;
+
+extern int tam_memoria;
 
 extern int ciclo_add;
 extern int ciclo_addi;
@@ -29,6 +32,12 @@ extern int ciclo_beq;
 extern int ciclo_bne;
 extern int ciclo_ld;
 extern int ciclo_sd;
+extern int ciclo_bl;
+extern int ciclo_ble;
+extern int ciclo_bg;
+extern int ciclo_bge;
+extern int ciclo_li;
+extern int ciclo_lui;
 
 extern int cont_ciclos;
 
@@ -40,5 +49,6 @@ extern Componente somador;
 extern Componente multiplicador;
 extern Componente divisor;
 
+void iniciarTomasulo();
 
 #endif

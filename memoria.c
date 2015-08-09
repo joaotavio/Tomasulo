@@ -6,45 +6,25 @@
 
 int64_t memoria[TAM_MEMORIA];
 
-bool memoriaInsereInst(Instrucao inst, int posicao){
-    if (posicao < 0 || posicao >= TAM_MEMORIA){
-        printf("ERRO: Posicao de memoria invalida.\n");
-        return false;
-    }
+bool fimDeInstrucao(int posicao){
+    return memoria[posicao] == FIM_DE_INSTRUCAO;
+}
 
+void memoriaInsereInst(Instrucao inst, int posicao){
     memoria[posicao] = instrucaoParaBinario(inst);
-    return true;
+    memoria[posicao+1] = FIM_DE_INSTRUCAO;
 }
 
-bool memoriaInsereDado(int valor, int posicao){
-    if (posicao < 0 || posicao >= TAM_MEMORIA){
-        printf("ERRO: Posicao de memoria invalida.\n");
-        return false;
-    }
-
+void memoriaInsereDado(int valor, int posicao){
     memoria[posicao] = valor;
-    return true;
 }
 
-bool memoriaObterInst(int posicao, Instrucao *inst_retorno){
-    if (posicao < 0 || posicao >= TAM_MEMORIA){
-        printf("ERRO: Posicao de memoria invalida.\n");
-        return false;
-    }
-
-    *inst_retorno = binarioParaInstrucao(memoria[TAM_MEMORIA - 1 - posicao]);
-    return true;
+Instrucao memoriaObterInst(int posicao){
+    return binarioParaInstrucao(memoria[posicao]);
 }
 
-bool memoriaObterDado(int posicao, int *valor_retorno){
-    if (posicao < 0 || posicao >= TAM_MEMORIA){
-        printf("ERRO: Posicao de memoria invalida.\n");
-        return false;
-    }
-
-    //verificar problema de posicao ser um binario de instrucao
-    *valor_retorno = memoria[posicao];
-    return true;
+int memoriaObterDado(int posicao){
+    return memoria[posicao];
 }
 
 void printMemoria(){
@@ -53,6 +33,6 @@ void printMemoria(){
     printf("\nMEMORIA:\n");
     for (i = 0; i < TAM_MEMORIA; i++){
         binarioParaString(memoria[i], str);
-        printf("[%d]: BINARIO - %s\n", i, str);
+        printf("[%d]: - %s\n", i, str);
     }
 }

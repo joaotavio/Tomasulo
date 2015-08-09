@@ -6,6 +6,8 @@ ARQUITETURA:
 	janela de instrucoes 40
 	buffer de carga 3
 	buffer de escrita 5
+    emissao 2
+    memoria 50
 
 CICLOS:
 	add 2
@@ -20,13 +22,21 @@ CICLOS:
     sd 2
     beq 1
     bne 1
+    bl 1
+    ble 1
+    bg 1
+    bge 1
+    li 1
+    lui 1
 
 Texto:
 add R0, R1, R30
 addi R9, R2, -100
-add R4, R5, R6
+bge R4, R5, 2
 sub R7, R8, R9
 ld R10, 100
+li R5, -2042
+lui R6, 500
 mult R11, R12, R13
 div R15, R16, R17
 add R18, R19, R20

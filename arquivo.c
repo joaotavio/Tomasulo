@@ -34,6 +34,12 @@ bool decodificaComponente(char str[], int valor){ //MUDAR NOME
     else if (strcmp(str, "buffer de escrita") == 0){
         qtd_buffer_escrita = valor;
     }
+    else if (strcmp(str, "emissao") == 0){
+        qtd_emissao = valor;
+    }
+    else if (strcmp(str, "memoria") == 0){
+        tam_memoria = valor;
+    }
     else {
         return false;
     }
@@ -110,6 +116,24 @@ bool decodificaCiclo(char str[], int valor){ //MUDAR NOME
     else if (strcmp(str, "bne") == 0){
         ciclo_bne = valor;
     }
+    else if (strcmp(str, "bl") == 0){
+        ciclo_bl = valor;
+    }
+    else if (strcmp(str, "ble") == 0){
+        ciclo_ble = valor;
+    }
+    else if (strcmp(str, "bg") == 0){
+        ciclo_bg = valor;
+    }
+    else if (strcmp(str, "bge") == 0){
+        ciclo_bge = valor;
+    }
+    else if (strcmp(str, "li") == 0){
+        ciclo_li = valor;
+    }
+    else if (strcmp(str, "lui") == 0){
+        ciclo_lui = valor;
+    }
     else {
         return false;
     }
@@ -130,7 +154,8 @@ bool lerCabecalhoCiclos(FILE* arquivo){
     printf("\n%s\n", buffer);
 
     int i;
-    for (i = 0; i < NUM_OPERACOES; ++i) {
+    //NUM_OPERACOES - 1 POR CAUSA DA OPERACAO NOP
+    for (i = 0; i < NUM_OPERACOES - 1; ++i) {
         if (fscanf(arquivo, " %100[^0-9] %d", buffer, &valor) != 2)
             return false;
 
@@ -157,29 +182,28 @@ bool lerCabecalho(FILE* arquivo){
     return true;
 }
 
+bool decodificaImediato(char str[], long long int *retorno){
+    if (!isNumero(str))
+        return false;
+    
+    *retorno = atoll(str);
+    return true;
+}
+
 //MUDAR ESSE NOME TAMBEM
-bool decodificaOperando(char str[], int *retorno, bool imediato){
+bool decodificaOperando(char str[], long long int *retorno){
     char numero[strlen(str)];
-    if (imediato){
-        if (!isNumero(str))
+    if (sscanf(str, "r%s", numero) == 1){
+        if (!isNumero(numero))
             return false;
-        
-        *retorno = atoi(str);
-    }
-    else {
-        if (sscanf(str, "r%s", numero) == 1){
-            if (!isNumero(numero))
-                return false;
 
-            *retorno = atoi(numero);
+        *retorno = atoll(numero);
 
-            if (*retorno < 0 || *retorno >= NUM_REGISTRADOR)
-                return false;
-        }
-        else {
+        if (*retorno < 0 || *retorno >= NUM_REGISTRADOR)
             return false;
-        }
     }
+    else 
+        return false;    
 
     return true;
 }
@@ -204,94 +228,130 @@ bool decodificaInstrucao(char str[], Instrucao *inst){ //mudar nome
     if (operandos[0] != NULL && operandos[1] != NULL){
         if (operandos[2] != NULL){
             if (strcmp(opcode, "add") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                if (!decodificaOperando(operandos[0], &inst->dest))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                if (!decodificaOperando(operandos[1], &inst->op1))
                     return false;
-                if (!decodificaOperando(operandos[2], &inst->op2, false))
+                if (!decodificaOperando(operandos[2], &inst->op2))
                     return false;
                 inst->opcode = ADD;
             }
             else if (strcmp(opcode, "addi") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                if (!decodificaOperando(operandos[0], &inst->dest))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                if (!decodificaOperando(operandos[1], &inst->op1))
                     return false;
-                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                if (!decodificaImediato(operandos[2], &inst->op2))
                     return false;
                 inst->opcode = ADDI;
             }
             else if (strcmp(opcode, "sub") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                if (!decodificaOperando(operandos[0], &inst->dest))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                if (!decodificaOperando(operandos[1], &inst->op1))
                     return false;
-                if (!decodificaOperando(operandos[2], &inst->op2, false))
+                if (!decodificaOperando(operandos[2], &inst->op2))
                     return false;
                 inst->opcode = SUB;
             }
             else if (strcmp(opcode, "subi") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                if (!decodificaOperando(operandos[0], &inst->dest))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                if (!decodificaOperando(operandos[1], &inst->op1))
                     return false;
-                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                if (!decodificaImediato(operandos[2], &inst->op2))
                     return false;
                 inst->opcode = SUBI;
             }
             else if (strcmp(opcode, "mult") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                if (!decodificaOperando(operandos[0], &inst->dest))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                if (!decodificaOperando(operandos[1], &inst->op1))
                     return false;
-                if (!decodificaOperando(operandos[2], &inst->op2, false))
+                if (!decodificaOperando(operandos[2], &inst->op2))
                     return false;
                 inst->opcode = MULT;
             }
             else if (strcmp(opcode, "multi") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                if (!decodificaOperando(operandos[0], &inst->dest))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                if (!decodificaOperando(operandos[1], &inst->op1))
                     return false;
-                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                if (!decodificaImediato(operandos[2], &inst->op2))
                     return false;
                 inst->opcode = MULTI;
             }
             else if (strcmp(opcode, "div") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                if (!decodificaOperando(operandos[0], &inst->dest))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                if (!decodificaOperando(operandos[1], &inst->op1))
                     return false;
-                if (!decodificaOperando(operandos[2], &inst->op2, false))
+                if (!decodificaOperando(operandos[2], &inst->op2))
                     return false;
                 inst->opcode = DIV;
             }
             else if (strcmp(opcode, "divi") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                if (!decodificaOperando(operandos[0], &inst->dest))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                if (!decodificaOperando(operandos[1], &inst->op1))
                     return false;
-                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                if (!decodificaImediato(operandos[2], &inst->op2))
                     return false;
                 inst->opcode = DIVI;
             }
             else if (strcmp(opcode, "beq") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                if (!decodificaOperando(operandos[0], &inst->op1))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                if (!decodificaOperando(operandos[1], &inst->op2))
                     return false;
-                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                if (!decodificaImediato(operandos[2], &inst->dest))
                     return false;
                 inst->opcode = BEQ;
             }
             else if (strcmp(opcode, "bne") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                if (!decodificaOperando(operandos[0], &inst->op1))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                if (!decodificaOperando(operandos[1], &inst->op2))
                     return false;
-                if (!decodificaOperando(operandos[2], &inst->op2, true))
+                if (!decodificaImediato(operandos[2], &inst->dest))
                     return false;
                 inst->opcode = BNE;
+            }
+            else if (strcmp(opcode, "bl") == 0){
+                if (!decodificaOperando(operandos[0], &inst->op1))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op2))
+                    return false;
+                if (!decodificaImediato(operandos[2], &inst->dest))
+                    return false;
+                inst->opcode = BL;
+            }
+            else if (strcmp(opcode, "ble") == 0){
+                if (!decodificaOperando(operandos[0], &inst->op1))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op2))
+                    return false;
+                if (!decodificaImediato(operandos[2], &inst->dest))
+                    return false;
+                inst->opcode = BLE;
+            }
+            else if (strcmp(opcode, "bg") == 0){
+                if (!decodificaOperando(operandos[0], &inst->op1))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op2))
+                    return false;
+                if (!decodificaImediato(operandos[2], &inst->dest))
+                    return false;
+                inst->opcode = BG;
+            }
+            else if (strcmp(opcode, "bge") == 0){
+                if (!decodificaOperando(operandos[0], &inst->op1))
+                    return false;
+                if (!decodificaOperando(operandos[1], &inst->op2))
+                    return false;
+                if (!decodificaImediato(operandos[2], &inst->dest))
+                    return false;
+                inst->opcode = BGE;
             }
             else {
                 return false;
@@ -299,22 +359,36 @@ bool decodificaInstrucao(char str[], Instrucao *inst){ //mudar nome
         }
         else {
             if (strcmp(opcode, "ld") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, false))
+                if (!decodificaOperando(operandos[0], &inst->dest))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, true))
+                if (!decodificaImediato(operandos[1], &inst->op1))
                     return false;
                 if (inst->op1 < 0)
                     return false;
                 inst->opcode = LD;
             }
             else if (strcmp(opcode, "sd") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest, true))
+                if (!decodificaImediato(operandos[0], &inst->dest))
                     return false;
-                if (!decodificaOperando(operandos[1], &inst->op1, false))
+                if (!decodificaOperando(operandos[1], &inst->op1))
                     return false;
                 if (inst->dest < 0)
                     return false;
                 inst->opcode = SD;
+            }
+            else if (strcmp(opcode, "li") == 0){
+                if (!decodificaOperando(operandos[0], &inst->dest))
+                    return false;
+                if (!decodificaImediato(operandos[1], &inst->op1))
+                    return false;
+                inst->opcode = LI;
+            }
+            else if (strcmp(opcode, "lui") == 0){
+                if (!decodificaOperando(operandos[0], &inst->dest))
+                    return false;
+                if (!decodificaImediato(operandos[1], &inst->op1))
+                    return false;
+                inst->opcode = LUI;
             }
             else {
                 return false;
@@ -351,7 +425,7 @@ bool lerInstrucoes(FILE* arquivo){
         memoriaInsereInst(inst, i);
 
         //printf("%s\n", buffer);
-        printf("%d R%d, R%d, R%d\n", inst.opcode, inst.dest, inst.op1, inst.op2);
+        printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
         i++;
     }
 

@@ -118,9 +118,9 @@ void mostraComponente(Componente comp){
     while(aux != NULL){
         printf("ID: %d\n", aux->dado.id);
         printf("OPCODE: %d\n", aux->dado.opcode);
-        printf("DEST: %d\n", aux->dado.dest);
-        printf("OP1: %d\n", aux->dado.op1);
-        printf("OP2: %d\n\n", aux->dado.op2);
+        printf("DEST: %lld\n", aux->dado.dest);
+        printf("OP1: %lld\n", aux->dado.op1);
+        printf("OP2: %lld\n\n", aux->dado.op2);
         aux = aux->prox;
     }
 }
