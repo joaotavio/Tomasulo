@@ -19,6 +19,20 @@ struct componente {
     int tam;
 };
 
+struct registrador{
+	int valor;
+	reserva[50] relacao; //estação de reservas que irá escrever no registrador
+}
+
+struct reserva{
+	Operacoes opcode;
+	Registrador registrador_j;
+	Registrador registrador_k;
+	int valor_j;
+	int valor_k;
+	bool busy;
+}
+
 bool componenteEstaVazio(Componente comp);
 bool componenteEstaCheio(Componente comp);
 Componente criaComponente(int tamMax);
