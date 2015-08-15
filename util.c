@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <math.h>
 #include "util.h"
 
@@ -77,6 +78,7 @@ void binarioParaString(int64_t valor, char str[]){
 
 void printBinario(int64_t valor){
     char str[64];
-    binarioParaString(valor, str);
+    itoa(valor, str, 2);
+    //binarioParaString(valor, str);
     printf("%s\n", str);
 }

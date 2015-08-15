@@ -10,7 +10,7 @@
 
 #define MAX_TAM_LINHA 50
 
-bool decodificaComponente(char str[], int valor){ //MUDAR NOME
+bool decodificaComponente(FILE* arquivo, char str[], int valor){ //MUDAR NOME
     strMinuscula(str);
 
     if (strcmp(str, "somador") == 0){
@@ -19,14 +19,11 @@ bool decodificaComponente(char str[], int valor){ //MUDAR NOME
     else if (strcmp(str, "multiplicador") == 0){
         qtd_multiplicador = valor;
     }
-    else if (strcmp(str, "divisor") == 0){
-        qtd_divisor = valor;
-    }
     else if (strcmp(str, "busca de instrucoes") == 0){
         qtd_busca_inst = valor;
     }
     else if (strcmp(str, "janela de instrucoes") == 0){
-        qtd_janela_inst = valor;
+        tam_janela_inst = valor;
     }
     else if (strcmp(str, "buffer de carga") == 0){
         qtd_buffer_carga = valor;
@@ -37,8 +34,21 @@ bool decodificaComponente(char str[], int valor){ //MUDAR NOME
     else if (strcmp(str, "emissao") == 0){
         qtd_emissao = valor;
     }
+    else if (strcmp(str, "fila") == 0){
+        tam_fila = valor;
+    }
     else if (strcmp(str, "memoria") == 0){
         tam_memoria = valor;
+    }
+    else if (strcmp(str, "portas banco de registradores") == 0){
+        qtd_portas_reg = valor;
+    }
+    else if (strcmp(str, "imemoria") == 0){
+        intervalo_mem_x = valor;
+        if (fscanf(arquivo, " ,%d", &valor) != 1)
+            return false;
+        intervalo_mem_y = valor;
+        printf("  imemoria -- %d, %d\n", intervalo_mem_x, intervalo_mem_y);
     }
     else {
         return false;
@@ -62,15 +72,17 @@ bool lerCabecalhoArquitetura(FILE* arquivo){
 
     int i;
     for (i = 0; i < NUM_COMPONENTES; ++i) {
-        if (fscanf(arquivo, " %100[^0-9] %d", buffer, &valor) != 2)
+        if (fscanf(arquivo, " %100[^=] %*[^0-9] %d", buffer, &valor) != 2)
             return false;
+                
         tamanho = strlen(buffer);
 
-        while (isblank(buffer[tamanho - 1]))
+        while (isspace(buffer[tamanho - 1]))
             buffer[--tamanho] = '\0';
 
-        if (!decodificaComponente(buffer, valor))
+        if (!decodificaComponente(arquivo, buffer, valor))
             return false;
+
         printf("  %s --- %d\n", buffer, valor);
     }
 
@@ -83,25 +95,25 @@ bool decodificaCiclo(char str[], int valor){ //MUDAR NOME
     if (strcmp(str, "add") == 0){
         ciclo_add = valor;
     }
-    else if (strcmp(str, "add.i") == 0){
+    else if (strcmp(str, "addi") == 0){
         ciclo_addi = valor;
     }
     else if (strcmp(str, "sub") == 0){
         ciclo_sub = valor;
     }
-    else if (strcmp(str, "sub.i") == 0){
+    else if (strcmp(str, "subi") == 0){
         ciclo_subi = valor;
     }
     else if (strcmp(str, "mult") == 0){
         ciclo_mult = valor;
     }
-    else if (strcmp(str, "mult.i") == 0){
+    else if (strcmp(str, "multi") == 0){
         ciclo_multi = valor;
     }
     else if (strcmp(str, "div") == 0){
         ciclo_div = valor;
     }
-    else if (strcmp(str, "div.i") == 0){
+    else if (strcmp(str, "divi") == 0){
         ciclo_divi = valor;
     }
     else if (strcmp(str, "ld") == 0){
@@ -131,9 +143,6 @@ bool decodificaCiclo(char str[], int valor){ //MUDAR NOME
     else if (strcmp(str, "li") == 0){
         ciclo_li = valor;
     }
-    else if (strcmp(str, "lui") == 0){
-        ciclo_lui = valor;
-    }
     else {
         return false;
     }
@@ -154,14 +163,14 @@ bool lerCabecalhoCiclos(FILE* arquivo){
     printf("\n%s\n", buffer);
 
     int i;
-    //NUM_OPERACOES - 1 POR CAUSA DA OPERACAO NOP
-    for (i = 0; i < NUM_OPERACOES - 1; ++i) {
-        if (fscanf(arquivo, " %100[^0-9] %d", buffer, &valor) != 2)
+    //NUM_OPERACOES - 3 POR CAUSA DA OPERACAO NOP, jump e exit
+    for (i = 0; i < NUM_OPERACOES - 3; ++i) {
+        if (fscanf(arquivo, " %100[^=] %*[^0-9] %d", buffer, &valor) != 2)
             return false;
 
         tamanho = strlen(buffer);
 
-        while (isblank(buffer[tamanho - 1]))
+        while (isspace(buffer[tamanho - 1]))
             buffer[--tamanho] = '\0';
 
         if (!decodificaCiclo(buffer, valor))
@@ -172,17 +181,7 @@ bool lerCabecalhoCiclos(FILE* arquivo){
     return true;
 }
 
-bool lerCabecalho(FILE* arquivo){
-    if (!lerCabecalhoArquitetura(arquivo))
-        return false;
-
-    if (!lerCabecalhoCiclos(arquivo))
-        return false;
-
-    return true;
-}
-
-bool decodificaImediato(char str[], long long int *retorno){
+bool decodificaImediato(char str[], int *retorno){
     if (!isNumero(str))
         return false;
     
@@ -191,7 +190,7 @@ bool decodificaImediato(char str[], long long int *retorno){
 }
 
 //MUDAR ESSE NOME TAMBEM
-bool decodificaOperando(char str[], long long int *retorno){
+bool decodificaOperando(char str[], int *retorno){
     char numero[strlen(str)];
     if (sscanf(str, "r%s", numero) == 1){
         if (!isNumero(numero))
@@ -383,17 +382,26 @@ bool decodificaInstrucao(char str[], Instrucao *inst){ //mudar nome
                     return false;
                 inst->opcode = LI;
             }
-            else if (strcmp(opcode, "lui") == 0){
-                if (!decodificaOperando(operandos[0], &inst->dest))
-                    return false;
-                if (!decodificaImediato(operandos[1], &inst->op1))
-                    return false;
-                inst->opcode = LUI;
-            }
             else {
                 return false;
             }
         }
+    }
+    else if (operandos[0] != NULL){
+        if (strcmp(opcode, "jump") == 0){
+            if (!decodificaImediato(operandos[0], &inst->dest))
+                return false;
+            inst->opcode = JUMP;
+        }
+        else {
+            return false;
+        }
+    }
+    else if (strcmp(opcode, "exit") == 0){
+        inst->opcode = EXIT;
+    }
+    else if (strcmp(opcode, "nop") == 0){
+        inst->opcode = NOP;
     }
     else {
         return false;
@@ -419,27 +427,60 @@ bool lerInstrucoes(FILE* arquivo){
         if (fscanf(arquivo, " %100[^\n\r]", buffer) != 1)
             return true;
 
+        strMinuscula(buffer);
+        if (strcmp(buffer, "dados:") == 0)
+            return true;
+
         if (!decodificaInstrucao(buffer, &inst))
             return false;
         
         memoriaInsereInst(inst, i);
 
-        //printf("%s\n", buffer);
-        printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
+        printInstrucao(inst);
         i++;
     }
 
     return true;
 }
 
+bool lerDados(FILE* arquivo){
+    int num;
+    int num_scanf;
+    int i = 0;
+    printf("\nDados:\n");
+    while (!feof(arquivo)){
+        num_scanf = fscanf(arquivo, " %d", &num);
+        if (num_scanf < 0)
+            return true;
+        if (num_scanf != 1)
+            return false;
+        printf("NUM: %d\n", num);
+        memoriaInsereDado(num, i);
+        i++;
+    }
+    return true;
+}
+
 bool lerArquivo(FILE* arquivo){
-    if (!lerCabecalho(arquivo)){
-        printf("ERRO: Cabecalho do arquivo invalido.\n");
+    if (!lerCabecalhoArquitetura(arquivo)){
+        printf("ERRO: Cabecalho de Arquitetura do arquivo invalida.\n");
         return false;
     }
 
+    if (!lerCabecalhoCiclos(arquivo)){
+        printf("ERRO: Cabecalho de Ciclos do arquivo invalido.\n");
+        return false;
+    }
+
+    inicializaMemoria(tam_memoria);
+
     if (!lerInstrucoes(arquivo)){
         printf("ERRO: Instrucao invalida.\n");
+        return false;
+    }
+
+    if (!lerDados(arquivo)){
+        printf("ERRO: Dados invalidos.\n");
         return false;
     }
 

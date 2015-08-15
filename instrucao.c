@@ -1,43 +1,39 @@
+#include <stdio.h>
 #include "instrucao.h"
 #include "util.h"
 #include "tomasulo.h"
 
-#define BITS_INTEIRO 32
-#define LAST(k,n) ((k) & (((int64_t)1<<(n))-1))
-//fazer define COMBINAR
-
-int64_t instrucaoParaBinario(Instrucao inst){
-    int64_t binario;
+inst_t instrucaoParaBinario(Instrucao inst){
+    inst_t binario;
     int nbit_registrador = calculaBits(NUM_REGISTRADOR-1);
 
-    binario = ((int64_t)inst.opcode << (nbit_registrador + nbit_registrador + BITS_INTEIRO));
+    binario = ((inst_t)inst.opcode << (nbit_registrador + nbit_registrador + BITS_IMEDIATO));
 
     switch(inst.opcode){
         case ADD:
         case SUB:
         case MULT:
         case DIV:
-            binario |= ((int64_t)inst.dest << (nbit_registrador + BITS_INTEIRO));
-            binario |= ((int64_t)inst.op1 << BITS_INTEIRO);
-            binario |= ((int64_t)inst.op2 << (BITS_INTEIRO - nbit_registrador));
+            binario |= ((inst_t)inst.dest << (nbit_registrador + BITS_IMEDIATO));
+            binario |= ((inst_t)inst.op1 << BITS_IMEDIATO);
+            binario |= ((inst_t)inst.op2 << (BITS_IMEDIATO - nbit_registrador));
             break;
         case ADDI:
         case SUBI:
         case MULTI:
         case DIVI:
-            binario |= ((int64_t)inst.dest << (nbit_registrador + BITS_INTEIRO));
-            binario |= ((int64_t)inst.op1 << BITS_INTEIRO);
-            binario |= LAST((int64_t)inst.op2, BITS_INTEIRO);
+            binario |= ((inst_t)inst.dest << (nbit_registrador + BITS_IMEDIATO));
+            binario |= ((inst_t)inst.op1 << BITS_IMEDIATO);
+            binario |= LAST((inst_t)inst.op2, BITS_IMEDIATO);
             break;
         case LD:
         case LI:
-        case LUI:
-            binario |= ((int64_t)inst.dest << (BITS_INTEIRO + nbit_registrador));
-            binario |= LAST((int64_t)inst.op1, BITS_INTEIRO) << nbit_registrador;
+            binario |= ((inst_t)inst.dest << (BITS_IMEDIATO + nbit_registrador));
+            binario |= LAST((inst_t)inst.op1, BITS_IMEDIATO);
             break;
         case SD:
-            binario |= ((int64_t)inst.dest << (nbit_registrador + nbit_registrador));
-            binario |= (int64_t)inst.op1 << nbit_registrador;
+            binario |= (inst_t)inst.op1 << (BITS_IMEDIATO + nbit_registrador);
+            binario |= (inst_t)inst.dest;
             break;
         case BEQ:
         case BNE:
@@ -45,54 +41,54 @@ int64_t instrucaoParaBinario(Instrucao inst){
         case BGE:
         case BL:
         case BLE:
-            binario |= ((int64_t)inst.op1 << (nbit_registrador + BITS_INTEIRO));
-            binario |= ((int64_t)inst.op2 << BITS_INTEIRO);
-            binario |= LAST((int64_t)inst.dest, BITS_INTEIRO);
+            binario |= ((inst_t)inst.op1 << (nbit_registrador + BITS_IMEDIATO));
+            binario |= ((inst_t)inst.op2 << BITS_IMEDIATO);
+            binario |= LAST((inst_t)inst.dest, BITS_IMEDIATO);
             break;
+        case JUMP:
+            binario |=  LAST((inst_t)inst.dest, BITS_IMEDIATO);
+            break;
+        case EXIT:
         case NOP: break;
     }
 
     return binario;
 }
 
-Instrucao binarioParaInstrucao(int64_t valor){
+Instrucao binarioParaInstrucao(inst_t valor){
     Instrucao inst;
     int nbit_operacoes = calculaBits(NUM_OPERACOES-1);
     int nbit_registrador = calculaBits(NUM_REGISTRADOR-1);
 
-    inst.opcode = LAST(valor >> (nbit_registrador + nbit_registrador + BITS_INTEIRO), nbit_operacoes);
+    inst.opcode = LAST(valor >> (nbit_registrador + nbit_registrador + BITS_IMEDIATO), nbit_operacoes);
 
     switch(inst.opcode){
         case ADD:
         case SUB:
         case MULT:
         case DIV:
-            inst.dest = LAST(valor >> (nbit_registrador + BITS_INTEIRO), nbit_registrador);
-            inst.op1 = LAST(valor >> BITS_INTEIRO, nbit_registrador);
-            inst.op2 = LAST(valor >> (BITS_INTEIRO - nbit_registrador), nbit_registrador);
+            inst.dest = LAST(valor >> (nbit_registrador + BITS_IMEDIATO), nbit_registrador);
+            inst.op1 = LAST(valor >> BITS_IMEDIATO, nbit_registrador);
+            inst.op2 = LAST(valor >> (BITS_IMEDIATO - nbit_registrador), nbit_registrador);
             break;
         case ADDI:
         case SUBI:
         case MULTI:
         case DIVI:
-            inst.dest = LAST(valor >> (nbit_registrador + BITS_INTEIRO), nbit_registrador);
-            inst.op1 = LAST(valor >> BITS_INTEIRO, nbit_registrador);
-            inst.op2 = (int)LAST(valor, BITS_INTEIRO);
+            inst.dest = LAST(valor >> (nbit_registrador + BITS_IMEDIATO), nbit_registrador);
+            inst.op1 = LAST(valor >> BITS_IMEDIATO, nbit_registrador);
+            inst.op2 = (imediato_t)LAST(valor, BITS_IMEDIATO);
             break;
         case LD:
         case LI:
-        case LUI:
-            inst.dest = LAST(valor >> (BITS_INTEIRO + nbit_registrador), nbit_registrador);
-            if (inst.opcode == LUI)
-                inst.op1 = (unsigned)LAST(valor >> nbit_registrador, BITS_INTEIRO);
-            else
-                inst.op1 = (int)LAST(valor >> nbit_registrador, BITS_INTEIRO);
-            inst.op2 = LAST(valor, nbit_registrador);
+            inst.dest = LAST(valor >> (BITS_IMEDIATO + nbit_registrador), nbit_registrador);
+            inst.op2 = LAST(valor >> BITS_IMEDIATO, nbit_registrador);
+            inst.op1 = (imediato_t)LAST(valor, BITS_IMEDIATO);
             break;
         case SD:
-            inst.dest = LAST(valor >> (nbit_registrador + nbit_registrador), BITS_INTEIRO);
-            inst.op1 = LAST(valor >> nbit_registrador, nbit_registrador);
-            inst.op2 = LAST(valor, nbit_registrador);
+            inst.op1 = LAST(valor >> (BITS_IMEDIATO + nbit_registrador), nbit_registrador);
+            inst.op2 = LAST(valor >> BITS_IMEDIATO, nbit_registrador);
+            inst.dest = LAST(valor, BITS_IMEDIATO);
             break;
         case BEQ:
         case BNE:
@@ -100,12 +96,91 @@ Instrucao binarioParaInstrucao(int64_t valor){
         case BGE:
         case BL:
         case BLE:
-            inst.op1 = LAST(valor >> (nbit_registrador + BITS_INTEIRO), nbit_registrador);
-            inst.op2 = LAST(valor >> BITS_INTEIRO, nbit_registrador);
-            inst.dest = (int)LAST(valor, BITS_INTEIRO);
+            inst.op1 = LAST(valor >> (nbit_registrador + BITS_IMEDIATO), nbit_registrador);
+            inst.op2 = LAST(valor >> BITS_IMEDIATO, nbit_registrador);
+            inst.dest = (imediato_t)LAST(valor, BITS_IMEDIATO);
             break;
-        case NOP: break;
+        case JUMP:
+            inst.op1 = 0;
+            inst.op2 = 0;
+            inst.dest = (imediato_t)LAST(valor, BITS_IMEDIATO);
+            break;
+        case EXIT:
+            inst.op1 = 0;
+            inst.op2 = 0;
+            inst.dest = 0;
+            break;
+        case NOP: 
+            inst.op1 = 0;
+            inst.op2 = 0;
+            inst.dest = 0;
+            break;
     }
 
     return inst;
+}
+
+void printInstrucao(Instrucao inst){
+    switch(inst.opcode){
+        case ADD:
+            printf("add R%d, R%d, R%d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case SUB:
+            printf("sub R%d, R%d, R%d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case MULT:
+            printf("mult R%d, R%d, R%d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case DIV:
+            printf("div R%d, R%d, R%d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case ADDI:
+            printf("addi R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case SUBI:
+            printf("subi R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case MULTI:
+            printf("multi R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case DIVI:
+            printf("divi R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case LD:
+            printf("ld R%d, %d\n", inst.dest, inst.op1);
+            break;
+        case LI:
+            printf("li R%d, %d\n", inst.dest, inst.op1);
+            break;
+        case SD:
+            printf("sd %d, R%d\n", inst.dest, inst.op1);
+            break;
+        case BEQ:
+            printf("beq R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case BNE:
+            printf("bne R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case BG:
+            printf("bg R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case BGE:
+            printf("bge R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case BL:
+            printf("bl R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case BLE:
+            printf("ble R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            break;
+        case JUMP:
+            printf("jump %d\n", inst.dest);
+            break;
+        case EXIT:
+            printf("exit\n");
+            break;
+        case NOP: 
+            printf("nop\n");
+            break;
+    }
 }

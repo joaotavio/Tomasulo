@@ -4,6 +4,7 @@
 #include "arquivo.h"
 #include "tomasulo.h"
 #include "instrucao.h"
+#include "fila.h"
 //#include "memoria.h"
 
 #define NOME_ARQ_ENTRADA "entrada.txt"
@@ -17,24 +18,23 @@ void printRegistrador(){
 
 }
 
-void destruirComponentes(){
-    freeComponente(fila);
+void liberarComponentes(){
+    freeFila(fila);
     freeComponente(janela);
     freeComponente(load);
     freeComponente(store);
     freeComponente(somador);
     freeComponente(multiplicador);
-    freeComponente(divisor);
+    free(memoria);
 }
 
 void iniciarComponentes(){
-    fila = criaComponente(qtd_busca_inst);
-    janela = criaComponente(qtd_janela_inst);
+    fila = criaFila(tam_fila);
+    janela = criaComponente(tam_janela_inst);
     load = criaComponente(qtd_buffer_carga);
     store = criaComponente(qtd_buffer_escrita);
     somador = criaComponente(qtd_somador);
     multiplicador = criaComponente(qtd_multiplicador);
-    divisor = criaComponente(qtd_divisor);
     //criar componente estacoes reserva
 }
 
@@ -52,35 +52,31 @@ void iniciar(){
 
     printMemoria();
 
-    /*Instrucao inst;
-    inst = binarioParaInstrucao(memoria[0]);
-    printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
-    inst = binarioParaInstrucao(memoria[1]);
-    printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
-    inst = binarioParaInstrucao(memoria[2]);
-    printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
-    inst = binarioParaInstrucao(memoria[3]);
-    printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
-    inst = binarioParaInstrucao(memoria[4]);
-    printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
-    inst = binarioParaInstrucao(memoria[5]);
-    printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
-    inst = binarioParaInstrucao(memoria[6]);
-    printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
-    inst = binarioParaInstrucao(memoria[7]);
-    printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
-    inst = binarioParaInstrucao(memoria[8]);
-    printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
-    inst = binarioParaInstrucao(memoria[9]);
-    printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);
-    inst = binarioParaInstrucao(memoria[10]);
-    printf("%d R%lld, R%lld, R%lld\n", inst.opcode, inst.dest, inst.op1, inst.op2);*/
+    printInstrucao(memoriaObterInst(0));
+    printInstrucao(memoriaObterInst(1));
+    printInstrucao(memoriaObterInst(2));
+    printInstrucao(memoriaObterInst(3));
+    printInstrucao(memoriaObterInst(4));
+    printInstrucao(memoriaObterInst(5));
+    printInstrucao(memoriaObterInst(6));
+    printInstrucao(memoriaObterInst(7));
+    printInstrucao(memoriaObterInst(8));
+    printInstrucao(memoriaObterInst(9));
+    printInstrucao(memoriaObterInst(10));
+    printInstrucao(memoriaObterInst(11));
+    printInstrucao(memoriaObterInst(12));
+    int dado = memoriaObterDado(0);
+    printf("\nDADO: %d\n", dado);
+    dado = memoriaObterDado(1);
+    printf("DADO: %d\n", dado);
+    dado = memoriaObterDado(2);
+    printf("DADO: %d\n\n", dado);
 
     iniciarComponentes();
 
     iniciarTomasulo();
 
-    //FAZER EXECUCAO AQUI
+    liberarComponentes();
 }
 
 int main(int argc, char const *argv[]) {

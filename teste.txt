@@ -1,33 +1,34 @@
 ARQUITETURA:
-	somador	4
-	multiplicador 2
-    divisor 2
-	busca de instrucoes 4
-	janela de instrucoes 40
-	buffer de carga 3
-	buffer de escrita 5
-    emissao 2
-    memoria 50
+	somador = 4
+	multiplicador = 2
+    fila = 4
+	busca de instrucoes = 4
+	janela de instrucoes = 40
+	buffer de carga = 3
+	buffer de escrita = 5
+    emissao = 2
+    memoria = 100
+    portas banco de registradores = 32
+    imemoria = 0, 20
 
 CICLOS:
-	add 2
-	add.i 1
-    sub 2
-    sub.i 1
-    mult 2
-    mult.i 1
-    div 2
-    div.i 1
-    ld 2
-    sd 2
-    beq 1
-    bne 1
-    bl 1
-    ble 1
-    bg 1
-    bge 1
-    li 1
-    lui 1
+	add = 2
+	addi = 1
+    sub = 2
+    subi = 1
+    mult = 2
+    multi = 1
+    div = 2
+    divi = 1
+    ld = 2
+    sd = 2
+    beq = 1
+    bne = 1
+    bl = 1
+    ble = 1
+    bg = 1
+    bge = 1
+    li = 1
 
 Texto:
 add R0, R1, R30
@@ -36,8 +37,13 @@ bge R4, R5, 2
 sub R7, R8, R9
 ld R10, 100
 li R5, -2042
-lui R6, 500
 mult R11, R12, R13
 div R15, R16, R17
 add R18, R19, R20
 sd 123, R22
+jump 1
+nop
+exit
+
+Dados:
+1  2 -3

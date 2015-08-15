@@ -1,24 +1,27 @@
 #ifndef TOMASULO_H
 #define TOMASULO_H
 
+#include "fila.h"
 #include "componente.h"
 #include "memoria.h"
 
-#define NUM_COMPONENTES 9
+#define NUM_COMPONENTES 11
 #define NUM_REGISTRADOR 32
 
 /*** VARIÁVEIS GLOBAIS ***/
 
 extern int qtd_somador;
 extern int qtd_multiplicador;
-extern int qtd_divisor;
 extern int qtd_busca_inst;
-extern int qtd_janela_inst;
+extern int tam_janela_inst;
 extern int qtd_buffer_carga;
 extern int qtd_buffer_escrita;
 extern int qtd_emissao;
+extern int tam_fila;
+extern int qtd_portas_reg;
 
-extern int tam_memoria;
+extern int intervalo_mem_x;
+extern int intervalo_mem_y;
 
 extern int ciclo_add;
 extern int ciclo_addi;
@@ -41,13 +44,12 @@ extern int ciclo_lui;
 
 extern int cont_ciclos;
 
-extern Componente fila;
+extern Fila fila;
 extern Componente janela;
 extern Componente load;
 extern Componente store;
 extern Componente somador;
 extern Componente multiplicador;
-extern Componente divisor;
 
 void iniciarTomasulo();
 

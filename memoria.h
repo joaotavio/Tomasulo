@@ -3,14 +3,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "instrucao.h"
 
-#define TAM_MEMORIA 50
-#define FIM_DE_INSTRUCAO -1
+extern int tam_memoria;
+extern uint8_t* memoria;
 
-extern int64_t memoria[TAM_MEMORIA];
-
-bool fimDeInstrucao(int posicao);
+void inicializaMemoria(int tam_memoria);
 void memoriaInsereInst(Instrucao inst, int posicao);
 void memoriaInsereDado(int valor, int posicao);
 Instrucao memoriaObterInst(int posicao);
