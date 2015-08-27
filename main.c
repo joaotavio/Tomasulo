@@ -19,23 +19,22 @@ void printRegistrador(){
 }
 
 void liberarComponentes(){
-    freeFila(fila);
-    freeComponente(janela);
-    freeComponente(load);
-    freeComponente(store);
-    freeComponente(somador);
-    freeComponente(multiplicador);
     free(memoria);
+    free(est_somador);
+    free(est_multiplicador);
+    free(somador);
+    free(multiplicador);
+    free(load);
+    free(store);
+    free(janela.inst);
 }
 
 void iniciarComponentes(){
-    fila = criaFila(tam_fila);
-    janela = criaComponente(tam_janela_inst);
-    load = criaComponente(qtd_buffer_carga);
-    store = criaComponente(qtd_buffer_escrita);
-    somador = criaComponente(qtd_somador);
-    multiplicador = criaComponente(qtd_multiplicador);
-    //criar componente estacoes reserva
+    inicializaJanela(tam_janela);
+    inicializaER(est_somador, somador, qtd_somador);
+    inicializaER(est_multiplicador, multiplicador, qtd_multiplicador);
+    inicializaBuffer(load, qtd_buffer_carga);
+    inicializaBuffer(store, qtd_buffer_escrita);
 }
 
 void iniciar(){

@@ -1,7 +1,6 @@
 ARQUITETURA:
 	somador = 4
 	multiplicador = 2
-    fila = 4
 	busca de instrucoes = 4
 	janela de instrucoes = 40
 	buffer de carga = 3

@@ -23,7 +23,7 @@ bool decodificaComponente(FILE* arquivo, char str[], int valor){ //MUDAR NOME
         qtd_busca_inst = valor;
     }
     else if (strcmp(str, "janela de instrucoes") == 0){
-        tam_janela_inst = valor;
+        tam_janela = valor;
     }
     else if (strcmp(str, "buffer de carga") == 0){
         qtd_buffer_carga = valor;
@@ -33,9 +33,6 @@ bool decodificaComponente(FILE* arquivo, char str[], int valor){ //MUDAR NOME
     }
     else if (strcmp(str, "emissao") == 0){
         qtd_emissao = valor;
-    }
-    else if (strcmp(str, "fila") == 0){
-        tam_fila = valor;
     }
     else if (strcmp(str, "memoria") == 0){
         tam_memoria = valor;

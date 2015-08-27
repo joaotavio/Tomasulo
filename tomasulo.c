@@ -8,11 +8,9 @@ int qtd_somador;
 int qtd_multiplicador;
 int qtd_divisor;
 int qtd_busca_inst;
-int tam_janela_inst;
 int qtd_buffer_carga;
 int qtd_buffer_escrita;
 int qtd_emissao;
-int tam_fila;
 int qtd_portas_reg;
 
 int intervalo_mem_x;
@@ -37,12 +35,11 @@ int ciclo_bge;
 int ciclo_li;
 int ciclo_lui;
 
-Fila fila;
-Componente janela;
+/*Componente janela;
 Componente load;
 Componente store;
 Componente somador;
-Componente multiplicador;
+Componente multiplicador;*/
 
 int cont_ciclos;
 int pc;
@@ -54,11 +51,12 @@ void busca(){
     Instrucao inst;
     int i;
     for (i = 0; i < qtd_busca_inst; i++){
-        if (!filaEstaCheia(fila)){
+        if (!janelaCheia(janela)){
             inst = memoriaObterInst(pc);
             switch (inst.opcode){
                 case EXIT:
                     flag_exit = true;
+                    return;
                     break;
                 case JUMP:
                     //JUMP CONTA COMO UMA INSTRUCAO BUSCADA?
@@ -68,12 +66,16 @@ void busca(){
                     pc++;
                     break;
                 default:
-                    filaInsere(fila, inst);
+                    janelaInsere(inst);
                     pc++;
                     break;
             }
         }
     }
+}
+
+void emissao(){
+    
 }
 
 void iniciarTomasulo(){
@@ -83,10 +85,13 @@ void iniciarTomasulo(){
     //loop principal
     while (true) {
         busca();
-        mostraFila(fila);
+        mostraJanela();
         if (flag_exit)
             break;
         printf("-----------------------\n");
-        filaRemove(fila, &inst);
+        //filaRemove(fila, &inst);
+		inst = janelaRemove(0);
+        printf("\nREMOVIDA: ");
+        printInstrucao(inst);
     }
 }
