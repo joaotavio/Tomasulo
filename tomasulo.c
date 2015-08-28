@@ -136,6 +136,7 @@ void emissao(){
 				//estacaoInsere(est_multiplicador, inst);
 				break;
 			case 19:
+				//nop
 				break;
 		}
 	}
