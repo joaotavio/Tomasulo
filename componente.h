@@ -69,5 +69,7 @@ void mostraJanela();
 /*ESTAÇÃO DE RESERVA*/
 void inicializaER(EstacaoReserva *er, UnidadeFuncional *uf, int tamanho);
 void inicializaBuffer(Buffer *buffer, int tamanho);
+void mostraEstacao(EstacaoReserva *er, int tamanho);
+void estacaoInsere(EstacaoReserva *er, Instrucao inst);
 
 #endif

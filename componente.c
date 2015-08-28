@@ -60,3 +60,19 @@ void inicializaER(EstacaoReserva *er, UnidadeFuncional *uf, int tamanho){
 void inicializaBuffer(Buffer *buffer, int tamanho){
     buffer = (Buffer*)calloc(tamanho, sizeof(Buffer));
 }
+
+void estacaoInsere(EstacaoReserva *er, Instrucao inst){
+	//er[0].opcode = inst.opcode;
+	//er = 1;
+	printf("oi!!");
+	//er[0].vj = inst.op1;
+	//er[0].vk = inst.op2;
+	//er[0].busy = true;
+}
+
+void mostraEstacao(EstacaoReserva *er, int tamanho){
+	int i;
+	for(i = 0; i < tamanho; i++){
+		printf("Vk: %d\n", er[0].vk);
+	}
+}

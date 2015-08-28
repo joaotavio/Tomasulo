@@ -75,13 +75,76 @@ void busca(){
 }
 
 void emissao(){
-    
+    int i;
+	Instrucao inst;
+	for(i = 0; i < qtd_emissao; i++){
+		inst = janelaRemove(0);
+		switch(inst.opcode){
+			case 0:
+				//bufferInsere(load, inst);
+				break;
+			case 1:
+				//bufferInsere(store, inst);
+				break;
+			case 2:
+				//estacaoInsere(est_somador, inst);
+				break;
+			case 3:
+				//estacaoInsere(est_somador, inst);
+				break;
+			case 4:
+				//estacaoInsere(est_somador, inst);
+				break;
+			case 5:
+				//estacaoInsere(est_somador, inst);
+				break;
+			case 6:
+				//estacaoInsere(est_somador, inst);
+				break;
+			case 7:
+				//estacaoInsere(est_somador, inst);
+				break;
+			case 8:
+				//estacaoInsere(est_somador, inst);
+				break;
+			case 9:
+				break;
+			case 10:
+				break;
+			case 11:
+				//estacaoInsere(est_somador, inst);
+				break;
+			case 12:
+				//estacaoInsere(est_somador, inst);
+				break;
+			case 13:
+				//estacaoInsere(est_somador, inst);
+				break;
+			case 14:
+				//estacaoInsere(est_somador, inst);
+				break;
+			case 15:
+				//estacaoInsere(est_multiplicador, inst);
+				break;
+			case 16:
+				//estacaoInsere(est_multiplicador, inst);
+				break;
+			case 17:
+				//estacaoInsere(est_multiplicador, inst);
+				break;
+			case 18:
+				//estacaoInsere(est_multiplicador, inst);
+				break;
+			case 19:
+				break;
+		}
+	}
 }
 
 void iniciarTomasulo(){
     pc = 0;
     flag_exit = false;
-    Instrucao inst;
+    //Instrucao inst;
     //loop principal
     while (true) {
         busca();
@@ -89,9 +152,11 @@ void iniciarTomasulo(){
         if (flag_exit)
             break;
         printf("-----------------------\n");
-        //filaRemove(fila, &inst);
-		inst = janelaRemove(0);
-        printf("\nREMOVIDA: ");
-        printInstrucao(inst);
+        emissao();
+		//mostraEstacao(est_somador, qtd_somador);
+		//filaRemove(fila, &inst);
+		//inst = janelaRemove(0);
+        //printf("\nREMOVIDA: ");
+        //printInstrucao(inst);
     }
 }
