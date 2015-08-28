@@ -2,20 +2,20 @@
 #include <stdlib.h>
 #include "componente.h"
 
-int tam_janela;
-
 Janela janela;
-EstacaoReserva *est_somador;
-EstacaoReserva *est_multiplicador;
-Registrador registrador[TAM_REGISTRADOR];
-UnidadeFuncional *somador;
-UnidadeFuncional *multiplicador;
+Registrador registrador[NUM_REGISTRADOR];
 UnidadeEndereco unidadeEndereco;
-Buffer *load;
-Buffer *store;
+ComponenteER est_somador;
+ComponenteER est_multiplicador;
+ComponenteUF somador;
+ComponenteUF multiplicador;
+ComponenteBuffer load;
+ComponenteBuffer store;
 
-void inicializaJanela(int tamanho){
-    janela.inst = (Instrucao*)calloc(tamanho, sizeof(Instrucao));
+
+/* JANELA */
+void inicializaJanela(){
+    janela.inst = (Instrucao*)calloc(janela.tamMax, sizeof(Instrucao));
     janela.tam = 0;
 }
 
@@ -25,6 +25,8 @@ void janelaInsere(Instrucao inst){
 }
 
 Instrucao janelaRemove(int posicao){
+    if (janelaVazia(janela))
+        return (Instrucao){0};
     Instrucao retorno = janela.inst[posicao];
 	int i;
 	
@@ -42,7 +44,7 @@ bool janelaVazia(Janela janela){
 }
 
 bool janelaCheia(Janela janela){
-    return janela.tam == tam_janela;
+    return janela.tam == janela.tamMax;
 }
 
 void mostraJanela(){
@@ -52,27 +54,48 @@ void mostraJanela(){
     }
 }
 
-void inicializaER(EstacaoReserva *er, UnidadeFuncional *uf, int tamanho){
-    er = (EstacaoReserva*)calloc(tamanho, sizeof(EstacaoReserva));
-    uf = (UnidadeFuncional*)calloc(tamanho, sizeof(UnidadeFuncional));
+/* ESTAÇÃO DE RESERVA */
+void inicializaER(ComponenteER *er, ComponenteUF *uf){
+    er->est_reserva = (EstacaoReserva*)calloc(er->tamMax, sizeof(EstacaoReserva));
+    uf->un_funcional = (UnidadeFuncional*)calloc(er->tamMax, sizeof(UnidadeFuncional));
+    er->tam = 0;
+    uf->tam = 0;
+    uf->tamMax = er->tamMax;
 }
 
-void inicializaBuffer(Buffer *buffer, int tamanho){
-    buffer = (Buffer*)calloc(tamanho, sizeof(Buffer));
+void inicializaBuffer(ComponenteBuffer *buf){
+    buf->buffer = (Buffer*)calloc(buf->tamMax, sizeof(Buffer));
+    buf->tam = 0;
+}
+
+bool estReservaCheia(ComponenteER er){
+    return er.tam == er.tamMax;
+}
+
+bool unFuncionalCheia(ComponenteUF uf){
+    return uf.tam == uf.tamMax;
+}
+
+bool bufferCheio(ComponenteBuffer buf){
+    return buf.tam == buf.tamMax;
 }
 
 void estacaoInsere(EstacaoReserva *er, Instrucao inst){
-	//er[0].opcode = inst.opcode;
-	//er = 1;
-	printf("oi!!");
-	//er[0].vj = inst.op1;
-	//er[0].vk = inst.op2;
-	//er[0].busy = true;
+    //er[0].opcode = inst.opcode;
+    //er = 1;
+    printf("oi!!");
+    //er[0].vj = inst.op1;
+    //er[0].vk = inst.op2;
+    //er[0].busy = true;
 }
 
 void mostraEstacao(EstacaoReserva *er, int tamanho){
-	int i;
-	for(i = 0; i < tamanho; i++){
-		printf("Vk: %d\n", er[0].vk);
-	}
+    int i;
+    for(i = 0; i < tamanho; i++){
+        printf("Vk: %d\n", er[0].vk);
+    }
 }
+
+//fazer função procura estacao livre
+//procura unidade livre
+//estacao cheia, vazia

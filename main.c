@@ -5,36 +5,27 @@
 #include "tomasulo.h"
 #include "instrucao.h"
 #include "fila.h"
-//#include "memoria.h"
 
 #define NOME_ARQ_ENTRADA "entrada.txt"
 #define NOME_ARQ_SAIDA "saida.txt"
 
-void printCiclo(){
-    
-}
-
-void printRegistrador(){
-
-}
-
 void liberarComponentes(){
     free(memoria);
-    free(est_somador);
-    free(est_multiplicador);
-    free(somador);
-    free(multiplicador);
-    free(load);
-    free(store);
+    free(est_somador.est_reserva);
+    free(est_multiplicador.est_reserva);
+    free(somador.un_funcional);
+    free(multiplicador.un_funcional);
+    free(load.buffer);
+    free(store.buffer);
     free(janela.inst);
 }
 
 void iniciarComponentes(){
-    inicializaJanela(tam_janela);
-    inicializaER(est_somador, somador, qtd_somador);
-    inicializaER(est_multiplicador, multiplicador, qtd_multiplicador);
-    inicializaBuffer(load, qtd_buffer_carga);
-    inicializaBuffer(store, qtd_buffer_escrita);
+    inicializaJanela();
+    inicializaER(&est_somador, &somador);
+    inicializaER(&est_multiplicador, &multiplicador);
+    inicializaBuffer(&load);
+    inicializaBuffer(&store);
 }
 
 void iniciar(){
@@ -70,6 +61,7 @@ void iniciar(){
     printf("DADO: %d\n", dado);
     dado = memoriaObterDado(2);
     printf("DADO: %d\n\n", dado);
+
 
     iniciarComponentes();
 

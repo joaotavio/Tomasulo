@@ -4,12 +4,7 @@
 
 /*** VARIÁVEIS GLOBAIS ***/
 
-int qtd_somador;
-int qtd_multiplicador;
-int qtd_divisor;
 int qtd_busca_inst;
-int qtd_buffer_carga;
-int qtd_buffer_escrita;
 int qtd_emissao;
 int qtd_portas_reg;
 
@@ -35,129 +30,147 @@ int ciclo_bge;
 int ciclo_li;
 int ciclo_lui;
 
-/*Componente janela;
-Componente load;
-Componente store;
-Componente somador;
-Componente multiplicador;*/
-
 int cont_ciclos;
 int pc;
 
-bool flag_exit;
+/*VARIÁVEIS PARA PRINT*/
 
-//busca instruções na memória e coloca na fila
-void busca(){
-    Instrucao inst;
+Instrucao emitidas[10]; //DEPOIS MUDAR ISSO PARA MALLOC - TALVEZ PODE USAR ISSO PRA DEPENDENCIA
+int num_emitidas;
+
+void printCiclo(){
     int i;
-    for (i = 0; i < qtd_busca_inst; i++){
-        if (!janelaCheia(janela)){
-            inst = memoriaObterInst(pc);
-            switch (inst.opcode){
-                case EXIT:
-                    flag_exit = true;
-                    return;
-                    break;
-                case JUMP:
-                    //JUMP CONTA COMO UMA INSTRUCAO BUSCADA?
-                    pc += inst.dest;
-                    break;
-                case NOP:
-                    pc++;
-                    break;
-                default:
-                    janelaInsere(inst);
-                    pc++;
-                    break;
-            }
-        }
+    char *strInst;
+    printf("CICLO: %d\n", cont_ciclos);
+    printf("%-20s | %-20s | %-20s | %-20s | %-20s |\n", "EMISSAO", "UNIDADE DE ENDERECO", "ESTACAO DE RESERVA", "UNIDADE FUNCIONAL", "ESCRITA");
+    printf("---------------------|----------------------|----------------------|----------------------|----------------------|\n");
+    //ACHAR MINIMO ENTRE, EMITIDAS, UE, TAM ER, TAM UF E ESCRITAS
+    for (i = 0; i < num_emitidas; ++i) {
+        strInst = instToString(emitidas[i]);
+        printf("%-20s | ", strInst);
+        printf("%-20s | ", "---"); //UE
+        printf("%-20s | ", "---"); //ER
+        printf("%-20s | ", "---"); //UF
+        printf("%-20s | ", "---"); //ESCR
+        printf("\n");
+        free(strInst);
     }
+    printf("---------------------|----------------------|----------------------|----------------------|----------------------|\n\n");
 }
 
-void emissao(){
+void printRegistrador(){
+
+}
+
+//busca instruções na memória e coloca na janela
+bool busca(){
+    Instrucao inst;
     int i;
-	Instrucao inst;
-	for(i = 0; i < qtd_emissao; i++){
-		inst = janelaRemove(0);
-		switch(inst.opcode){
-			case 0:
-				//bufferInsere(load, inst);
-				break;
-			case 1:
-				//bufferInsere(store, inst);
-				break;
-			case 2:
-				//estacaoInsere(est_somador, inst);
-				break;
-			case 3:
-				//estacaoInsere(est_somador, inst);
-				break;
-			case 4:
-				//estacaoInsere(est_somador, inst);
-				break;
-			case 5:
-				//estacaoInsere(est_somador, inst);
-				break;
-			case 6:
-				//estacaoInsere(est_somador, inst);
-				break;
-			case 7:
-				//estacaoInsere(est_somador, inst);
-				break;
-			case 8:
-				//estacaoInsere(est_somador, inst);
-				break;
-			case 9:
-				break;
-			case 10:
-				break;
-			case 11:
-				//estacaoInsere(est_somador, inst);
-				break;
-			case 12:
-				//estacaoInsere(est_somador, inst);
-				break;
-			case 13:
-				//estacaoInsere(est_somador, inst);
-				break;
-			case 14:
-				//estacaoInsere(est_somador, inst);
-				break;
-			case 15:
-				//estacaoInsere(est_multiplicador, inst);
-				break;
-			case 16:
-				//estacaoInsere(est_multiplicador, inst);
-				break;
-			case 17:
-				//estacaoInsere(est_multiplicador, inst);
-				break;
-			case 18:
-				//estacaoInsere(est_multiplicador, inst);
-				break;
-			case 19:
-				//nop
-				break;
-		}
-	}
+    for (i = 0; i < qtd_busca_inst && !janelaCheia(janela); i++){
+        inst = memoriaObterInst(pc);
+        switch (inst.opcode){
+            case EXIT:
+                return !janelaVazia(janela);
+                break;
+            case JUMP:
+                pc += inst.dest;
+                break;
+            case NOP:
+                pc++;
+                break;
+            default:
+                janelaInsere(inst);
+                pc++;
+                break;
+        }
+    }
+    return !janelaVazia(janela);
+}
+
+bool emissao(){
+    int i;
+    Instrucao inst;
+
+    num_emitidas = 0;
+    for(i = 0; i < qtd_emissao && !janelaVazia(janela); i++, num_emitidas++){
+        inst = janelaRemove(0);
+        emitidas[i] = inst;
+        switch (inst.opcode){
+            case LD:
+                //bufferInsere(load, inst);
+                break;
+            case SD:
+                //bufferInsere(store, inst);
+                break;
+            case LI:
+                //estacaoInsere(est_somador, inst);
+                break;
+            case BEQ:
+                //estacaoInsere(est_somador, inst);
+                break;
+            case BNE:
+                //estacaoInsere(est_somador, inst);
+                break;
+            case BG:
+                //estacaoInsere(est_somador, inst);
+                break;
+            case BGE:
+                //estacaoInsere(est_somador, inst);
+                break;
+            case BL:
+                //estacaoInsere(est_somador, inst);
+                break;
+            case BLE:
+                //estacaoInsere(est_somador, inst);
+                break;
+            case ADD:
+                //estacaoInsere(est_somador, inst);
+                break;
+            case ADDI:
+                //estacaoInsere(est_somador, inst);
+                break;
+            case SUB:
+                //estacaoInsere(est_somador, inst);
+                break;
+            case SUBI:
+                //estacaoInsere(est_somador, inst);
+                break;
+            case MULT:
+                //estacaoInsere(est_multiplicador, inst);
+                break;
+            case MULTI:
+                //estacaoInsere(est_multiplicador, inst);
+                break;
+            case DIV:
+                //estacaoInsere(est_multiplicador, inst);
+                break;
+            case DIVI:
+                //estacaoInsere(est_multiplicador, inst);
+                break;
+            default:
+                break;
+        }
+    }
+    return num_emitidas != 0;
+}
+
+void pulso(){
+
 }
 
 void iniciarTomasulo(){
     pc = 0;
-    flag_exit = false;
-    //Instrucao inst;
+    cont_ciclos = 0;
+    bool flag_busca, flag_emissao, flag_exec = false, flag_escr = false;
+    Instrucao inst;
+
     //loop principal
     while (true) {
-        busca();
-        mostraJanela();
-        if (flag_exit)
+        flag_emissao = emissao();
+        flag_busca = busca();
+        if (!flag_busca && !flag_emissao && !flag_exec && !flag_escr)
             break;
-        printf("-----------------------\n");
-        emissao();
-		//mostraEstacao(est_somador, qtd_somador);
-		//filaRemove(fila, &inst);
-		//inst = janelaRemove(0);
-        //printf("\nREMOVIDA: ");
-        //printInstrucao(inst);
+        cont_ciclos++;
+        printCiclo();
     }
 }

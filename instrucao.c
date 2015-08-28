@@ -120,67 +120,75 @@ Instrucao binarioParaInstrucao(inst_t valor){
     return inst;
 }
 
-void printInstrucao(Instrucao inst){
+char* instToString(Instrucao inst){
+    char *str = (char*)malloc(sizeof(char));
     switch(inst.opcode){
         case ADD:
-            printf("add R%d, R%d, R%d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "add R%d, R%d, R%d", inst.dest, inst.op1, inst.op2);
             break;
         case SUB:
-            printf("sub R%d, R%d, R%d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "sub R%d, R%d, R%d", inst.dest, inst.op1, inst.op2);
             break;
         case MULT:
-            printf("mult R%d, R%d, R%d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "mult R%d, R%d, R%d", inst.dest, inst.op1, inst.op2);
             break;
         case DIV:
-            printf("div R%d, R%d, R%d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "div R%d, R%d, R%d", inst.dest, inst.op1, inst.op2);
             break;
         case ADDI:
-            printf("addi R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "addi R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
             break;
         case SUBI:
-            printf("subi R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "subi R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
             break;
         case MULTI:
-            printf("multi R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "multi R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
             break;
         case DIVI:
-            printf("divi R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "divi R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
             break;
         case LD:
-            printf("ld R%d, %d\n", inst.dest, inst.op1);
+            sprintf(str, "ld R%d, %d", inst.dest, inst.op1);
             break;
         case LI:
-            printf("li R%d, %d\n", inst.dest, inst.op1);
+            sprintf(str, "li R%d, %d", inst.dest, inst.op1);
             break;
         case SD:
-            printf("sd %d, R%d\n", inst.dest, inst.op1);
+            sprintf(str, "sd %d, R%d", inst.dest, inst.op1);
             break;
         case BEQ:
-            printf("beq R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "beq R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
             break;
         case BNE:
-            printf("bne R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "bne R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
             break;
         case BG:
-            printf("bg R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "bg R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
             break;
         case BGE:
-            printf("bge R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "bge R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
             break;
         case BL:
-            printf("bl R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "bl R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
             break;
         case BLE:
-            printf("ble R%d, R%d, %d\n", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "ble R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
             break;
         case JUMP:
-            printf("jump %d\n", inst.dest);
+            sprintf(str, "jump %d", inst.dest);
             break;
         case EXIT:
-            printf("exit\n");
+            sprintf(str, "exit");
             break;
         case NOP: 
-            printf("nop\n");
+            sprintf(str, "nop");
             break;
     }
+    return str;
+}
+
+void printInstrucao(Instrucao inst){
+    char *str = instToString(inst);
+    printf("%s\n", str);
+    free(str);
 }

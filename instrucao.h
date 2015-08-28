@@ -25,6 +25,7 @@ typedef struct instrucao {
 
 inst_t instrucaoParaBinario(Instrucao inst);
 Instrucao binarioParaInstrucao(inst_t valor);
+char* instToString(Instrucao inst);
 void printInstrucao(Instrucao inst);
 
 #endif

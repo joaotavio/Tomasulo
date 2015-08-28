@@ -5,15 +5,10 @@
 #include "memoria.h"
 
 #define NUM_COMPONENTES 10
-#define NUM_REGISTRADOR 32
 
 /*** VARIÁVEIS GLOBAIS ***/
 
-extern int qtd_somador;
-extern int qtd_multiplicador;
 extern int qtd_busca_inst;
-extern int qtd_buffer_carga;
-extern int qtd_buffer_escrita;
 extern int qtd_emissao;
 extern int qtd_portas_reg;
 
@@ -40,12 +35,6 @@ extern int ciclo_li;
 extern int ciclo_lui;
 
 extern int cont_ciclos;
-
-/*extern Componente janela;
-extern Componente load;
-extern Componente store;
-extern Componente somador;
-extern Componente multiplicador;*/
 
 void iniciarTomasulo();
 

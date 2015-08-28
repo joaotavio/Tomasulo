@@ -14,22 +14,22 @@ bool decodificaComponente(FILE* arquivo, char str[], int valor){ //MUDAR NOME
     strMinuscula(str);
 
     if (strcmp(str, "somador") == 0){
-        qtd_somador = valor;
+        est_somador.tamMax = valor;
     }
     else if (strcmp(str, "multiplicador") == 0){
-        qtd_multiplicador = valor;
+        est_multiplicador.tamMax = valor;
     }
     else if (strcmp(str, "busca de instrucoes") == 0){
         qtd_busca_inst = valor;
     }
     else if (strcmp(str, "janela de instrucoes") == 0){
-        tam_janela = valor;
+        janela.tamMax = valor;
     }
     else if (strcmp(str, "buffer de carga") == 0){
-        qtd_buffer_carga = valor;
+        load.tamMax = valor;
     }
     else if (strcmp(str, "buffer de escrita") == 0){
-        qtd_buffer_escrita = valor;
+        store.tamMax = valor;
     }
     else if (strcmp(str, "emissao") == 0){
         qtd_emissao = valor;
