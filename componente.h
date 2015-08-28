@@ -89,7 +89,8 @@ void inicializaBuffer(ComponenteBuffer *buffer);
 bool estReservaCheia(ComponenteER er);
 bool unFuncionalCheia(ComponenteUF uf);
 bool bufferCheio(ComponenteBuffer buf);
-void mostraEstacao(EstacaoReserva *er, int tamanho);
-void estacaoInsere(EstacaoReserva *er, Instrucao inst);
+void mostraEstacao(ComponenteER *er, int tamanho);
+void estacaoInsere(ComponenteER er, Instrucao inst, int posicao);
+int procuraEstacao(ComponenteER er);
 
 #endif

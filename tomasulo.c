@@ -88,7 +88,7 @@ bool busca(){
 }
 
 bool emissao(){
-    int i;
+    int i, posicao;
     Instrucao inst;
 
     num_emitidas = 0;
@@ -103,49 +103,50 @@ bool emissao(){
                 //bufferInsere(store, inst);
                 break;
             case LI:
-                //estacaoInsere(est_somador, inst);
+                //estacaoInsere(est_somador, inst, 0);
                 break;
             case BEQ:
-                //estacaoInsere(est_somador, inst);
+                //estacaoInsere(est_somador, inst, 0);
                 break;
             case BNE:
-                //estacaoInsere(est_somador, inst);
+                //estacaoInsere(est_somador, inst, 0);
                 break;
             case BG:
-                //estacaoInsere(est_somador, inst);
+                //estacaoInsere(est_somador, inst, 0);
                 break;
             case BGE:
-                //estacaoInsere(est_somador, inst);
+                //estacaoInsere(est_somador, inst, 0);
                 break;
             case BL:
-                //estacaoInsere(est_somador, inst);
+                //estacaoInsere(est_somador, inst, 0);
                 break;
             case BLE:
-                //estacaoInsere(est_somador, inst);
+                //estacaoInsere(est_somador, inst, 0);
                 break;
             case ADD:
-                //estacaoInsere(est_somador, inst);
+				posicao = procuraEstacao(est_somador);
+                estacaoInsere(est_somador, inst, posicao);
                 break;
             case ADDI:
-                //estacaoInsere(est_somador, inst);
+                //estacaoInsere(est_somador, inst, 0);
                 break;
             case SUB:
-                //estacaoInsere(est_somador, inst);
+                //estacaoInsere(est_somador, inst, 0);
                 break;
             case SUBI:
-                //estacaoInsere(est_somador, inst);
+                //estacaoInsere(est_somador, inst, 0);
                 break;
             case MULT:
-                //estacaoInsere(est_multiplicador, inst);
+                //estacaoInsere(est_multiplicador, inst, 0);
                 break;
             case MULTI:
-                //estacaoInsere(est_multiplicador, inst);
+                //estacaoInsere(est_multiplicador, inst, 0);
                 break;
             case DIV:
-                //estacaoInsere(est_multiplicador, inst);
+                //estacaoInsere(est_multiplicador, inst, 0);
                 break;
             case DIVI:
-                //estacaoInsere(est_multiplicador, inst);
+                //estacaoInsere(est_multiplicador, inst, 0);
                 break;
             default:
                 break;
@@ -162,7 +163,7 @@ void iniciarTomasulo(){
     pc = 0;
     cont_ciclos = 0;
     bool flag_busca, flag_emissao, flag_exec = false, flag_escr = false;
-    Instrucao inst;
+    //Instrucao inst;
 
     //loop principal
     while (true) {
@@ -173,4 +174,11 @@ void iniciarTomasulo(){
         cont_ciclos++;
         printCiclo();
     }
+	int i;
+	for(i = 0; i < somador.tamMax; i++){
+		printf("Opcode %d\n", est_somador.est_reserva[i].opcode);
+		printf("QJ: %d\n", est_somador.est_reserva[i].qj);
+		printf("QK: %d\n", est_somador.est_reserva[i].qk);
+		printf("Busy: %d\n\n", est_somador.est_reserva[i].busy);
+	}
 }

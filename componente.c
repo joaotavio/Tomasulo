@@ -63,39 +63,50 @@ void inicializaER(ComponenteER *er, ComponenteUF *uf){
     uf->tamMax = er->tamMax;
 }
 
+bool estReservaCheia(ComponenteER er){
+    return er.tam == er.tamMax;
+}
+
+void estacaoInsere(ComponenteER er, Instrucao inst, int posicao){
+	er.est_reserva[posicao].opcode = inst.opcode;
+	er.est_reserva[posicao].qj = inst.op1;
+	er.est_reserva[posicao].qk = inst.op2;
+	er.est_reserva[posicao].busy = true;
+}
+
+int procuraEstacao(ComponenteER er){
+	int i;
+	for(i = 0; i < er.tamMax; i++){
+		if(er.est_reserva[i].busy == false){
+			return i;
+		}
+	}
+	
+	return -1;
+}
+
+/*void mostraEstacao(ComponenteBuffer *er, int tamanho){
+    int i;
+    for(i = 0; i < tamanho; i++){
+        printf("Vk: %d\n", er[0].vk);
+    }
+}*/
+
+
+/*Unidade Funcional*/
+bool unFuncionalCheia(ComponenteUF uf){
+    return uf.tam == uf.tamMax;
+}
+
+/*Buffer Load/Store*/
 void inicializaBuffer(ComponenteBuffer *buf){
     buf->buffer = (Buffer*)calloc(buf->tamMax, sizeof(Buffer));
     buf->tam = 0;
 }
 
-bool estReservaCheia(ComponenteER er){
-    return er.tam == er.tamMax;
-}
-
-bool unFuncionalCheia(ComponenteUF uf){
-    return uf.tam == uf.tamMax;
-}
-
 bool bufferCheio(ComponenteBuffer buf){
     return buf.tam == buf.tamMax;
 }
-
-void estacaoInsere(EstacaoReserva *er, Instrucao inst){
-    //er[0].opcode = inst.opcode;
-    //er = 1;
-    printf("oi!!");
-    //er[0].vj = inst.op1;
-    //er[0].vk = inst.op2;
-    //er[0].busy = true;
-}
-
-void mostraEstacao(EstacaoReserva *er, int tamanho){
-    int i;
-    for(i = 0; i < tamanho; i++){
-        printf("Vk: %d\n", er[0].vk);
-    }
-}
-
 //fazer função procura estacao livre
 //procura unidade livre
 //estacao cheia, vazia
