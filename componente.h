@@ -8,8 +8,9 @@
 #define	NUM_REGISTRADOR 32
 
 typedef struct registrador {
-	int valor;
+	int64_t valor;
 	int qk[MAX_RESERVA];
+	int tamFila;
 } Registrador;
 
 typedef struct est_reserva{
@@ -39,7 +40,7 @@ typedef struct unidade_funcional {
 	int vj;
 	int vk;
 	bool busy;
-	int ciclo;
+	int ciclos;
 } UnidadeFuncional;
 
 typedef struct comp_unidade_funcional {
@@ -68,14 +69,14 @@ typedef struct un_endereco{
 extern Janela janela;
 extern Registrador registrador[NUM_REGISTRADOR];
 extern UnidadeEndereco unidadeEndereco;
-extern ComponenteER est_somador;
-extern ComponenteER est_multiplicador;
+extern ComponenteER er_somador;
+extern ComponenteER er_multiplicador;
 extern ComponenteUF somador;
 extern ComponenteUF multiplicador;
 extern ComponenteBuffer load;
 extern ComponenteBuffer store;
 
-/*JANELA*/
+/* JANELA */
 void inicializaJanela();
 void janelaInsere(Instrucao inst);
 Instrucao janelaRemove(int posicao);
@@ -83,14 +84,27 @@ bool janelaVazia(Janela janela);
 bool janelaCheia(Janela janela);
 void mostraJanela();
 
-/*ESTAÇÃO DE RESERVA*/
+/* ESTAÇÃO DE RESERVA */
 void inicializaER(ComponenteER *er, ComponenteUF *uf);
-void inicializaBuffer(ComponenteBuffer *buffer);
-bool estReservaCheia(ComponenteER er);
-bool unFuncionalCheia(ComponenteUF uf);
-bool bufferCheio(ComponenteBuffer buf);
-void mostraEstacao(ComponenteER *er, int tamanho);
-void estacaoInsere(ComponenteER er, Instrucao inst, int posicao);
+void estacaoInsere(ComponenteER *er, Operacoes opcode, int qj, int qk, int vj, int vk, int posicao);
+void estacaoRemove(ComponenteER *er, int posicao);
 int procuraEstacao(ComponenteER er);
+bool estReservaCheia(ComponenteER er);
+void mostraEstacao(ComponenteER *er, int tamanho);
+char* erToString(EstacaoReserva er);
+
+/* UNIDADE FUNCIONAL */
+bool unFuncionalCheia(ComponenteUF uf);
+int procuraUF(ComponenteUF uf, int posicao);
+void uFuncionalInsere(ComponenteUF *uf, int posicao, Operacoes opcode, int vj, int vk, int ciclos);
+void uFuncionalRemove(ComponenteUF *uf, int posicao);
+char* ufToString(UnidadeFuncional uf);
+
+/* BUFFER LOAD/STORE */
+void inicializaBuffer(ComponenteBuffer *buffer);
+bool bufferCheio(ComponenteBuffer buf);
+
+/* REGISTRADOR */
+void insereFilaRegistrador(Registrador *reg, int posicao, int estacao);
 
 #endif

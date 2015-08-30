@@ -10,13 +10,13 @@ Fila criaFila(int tamMax){
     return fila;
 }
 
-void filaInsere(Fila f, Instrucao valor){
+void filaInsere(Fila f, int valor){
     if (filaEstaCheia(f))
         return;
     
     Celula *nova;
     nova = malloc(sizeof(Celula));
-    nova->inst = valor;
+    nova->dado = valor;
     nova->prox = NULL;
 
     if (filaEstaVazia(f))
@@ -28,12 +28,12 @@ void filaInsere(Fila f, Instrucao valor){
     f->tam++;
 }
 
-bool filaRemove(Fila f, Instrucao *retorno){
+bool filaRemove(Fila f, int *retorno){
     if (filaEstaVazia(f))
         return false;
 
     Celula *alvo = f->inicio;
-    *retorno = alvo->inst;
+    *retorno = alvo->dado;
 
     if (f->inicio == f->fim)
         f->fim = NULL;
@@ -56,15 +56,15 @@ bool filaEstaCheia(Fila f){
 void mostraFila(Fila f){
     Celula *aux = f->inicio;
     while (aux != NULL){
-        printInstrucao(aux->inst);
+        printf("%d\n", aux->dado);
         aux = aux->prox;
     }
 }
 
 void esvazia(Fila f){
-    Instrucao inst;
+    int dado;
     while (f->tam > 0)
-        filaRemove(f, &inst);
+        filaRemove(f, &dado);
 }
 
 void freeFila(Fila f){

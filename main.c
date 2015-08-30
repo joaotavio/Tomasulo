@@ -11,8 +11,8 @@
 
 void liberarComponentes(){
     free(memoria);
-    free(est_somador.est_reserva);
-    free(est_multiplicador.est_reserva);
+    free(er_somador.est_reserva);
+    free(er_multiplicador.est_reserva);
     free(somador.un_funcional);
     free(multiplicador.un_funcional);
     free(load.buffer);
@@ -22,8 +22,8 @@ void liberarComponentes(){
 
 void iniciarComponentes(){
     inicializaJanela();
-    inicializaER(&est_somador, &somador);
-    inicializaER(&est_multiplicador, &multiplicador);
+    inicializaER(&er_somador, &somador);
+    inicializaER(&er_multiplicador, &multiplicador);
     inicializaBuffer(&load);
     inicializaBuffer(&store);
 }

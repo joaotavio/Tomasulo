@@ -14,10 +14,10 @@ bool decodificaComponente(FILE* arquivo, char str[], int valor){ //MUDAR NOME
     strMinuscula(str);
 
     if (strcmp(str, "somador") == 0){
-        est_somador.tamMax = valor;
+        er_somador.tamMax = valor;
     }
     else if (strcmp(str, "multiplicador") == 0){
-        est_multiplicador.tamMax = valor;
+        er_multiplicador.tamMax = valor;
     }
     else if (strcmp(str, "busca de instrucoes") == 0){
         qtd_busca_inst = valor;
