@@ -174,7 +174,7 @@ bool busca(){
 //procurar unidade funcional livre e colocar na ER associada, se nenhuma tiver livre procura uma estacao de reserva
 //retornar numero de emitidas, se for -1 nao emitiu nada(false)
 bool emissao(){
-    int i, j, posicao, pos_anterior_somador = 0, pos_anterior_mult = 0;
+    int i, j, posicao, pos_anterior_somador = 0, pos_anterior_mult = 0/*, pos_anterior_load = 0, pos_anterior_store = 0*/;
     Instrucao inst;
     bool foiEmitida;
 
@@ -185,14 +185,24 @@ bool emissao(){
             inst = janela.inst[j];
             switch (inst.opcode){
                 case LD:
-                    janelaRemove(j);
-                    foiEmitida = true;
+					//posicao = procuraMemoria(só ver a memoria ta livre?);
+					//if(posicao == -1){
+						posicao = procuraBuffer(load);
+					//} else{
+						//pos_anterior_load = posicao + 1;
+					//}
+					
+					if(posicao > -1){
+						janelaRemove(j);
+						bufferInsere(&load, inst.op1, inst.dest);
+						foiEmitida = true;
+					}
                     break;
                 case SD:                    
                     janelaRemove(j);
                     foiEmitida = true;
                     break;
-                case LI:
+                case LI: //ok
                     posicao = procuraUF(somador, pos_anterior_somador);
 
                     if (posicao == -1)
@@ -206,12 +216,12 @@ bool emissao(){
                         foiEmitida = true;
                     }                  
                     break;
-                case BEQ:
-                case BNE:
-                case BG:
-                case BGE:
-                case BL:
-                case BLE:
+                case BEQ: //ok
+                case BNE: //ok
+                case BG: //ok
+                case BGE: //ok
+                case BL: //ok
+                case BLE: //ok
                     posicao = procuraUF(somador, pos_anterior_somador);
                     if (posicao == -1)
                         posicao = procuraEstacao(er_somador);
@@ -224,8 +234,8 @@ bool emissao(){
                         foiEmitida = true;
                     }
                     break;
-                case ADD:                    
-                case SUB:
+                case ADD: //ok             
+                case SUB:  //ok
                     posicao = procuraUF(somador, pos_anterior_somador);
                     if (posicao == -1)
                         posicao = procuraEstacao(er_somador);
@@ -238,8 +248,8 @@ bool emissao(){
                         foiEmitida = true;
                     }                   
                     break;
-                case ADDI:
-                case SUBI:
+                case ADDI:  //ok
+                case SUBI: //ok
                     posicao = procuraUF(somador, pos_anterior_somador);
                     if (posicao == -1)
                         posicao = procuraEstacao(er_somador);
@@ -252,8 +262,8 @@ bool emissao(){
                         foiEmitida = true;
                     }
                     break;
-                case MULT:                    
-                case DIV:
+                case MULT:  //ok                   
+                case DIV: //ok
                     posicao = procuraUF(multiplicador, pos_anterior_mult);
                     if (posicao == -1)
                         posicao = procuraEstacao(er_multiplicador);
@@ -266,8 +276,8 @@ bool emissao(){
                         foiEmitida = true;
                     }
                     break;
-                case MULTI:                    
-                case DIVI:
+                case MULTI:   //ok                  
+                case DIVI: //ok
                     posicao = procuraUF(multiplicador, pos_anterior_mult);
                     if (posicao == -1)
                         posicao = procuraEstacao(er_multiplicador);
@@ -461,6 +471,12 @@ void iniciarTomasulo(){
         if (!flag_busca && !flag_emissao && !flag_pulso)
             break;
         cont_ciclos++;
+		int i;
+		for(i = 0; i < load.tamMax; i++){
+			printf("\n\nDestino: %d", load.buffer[i].destino);
+			printf("\nOrigem: %d", load.buffer[i].origem);
+			printf("\nBusy: %d\n", load.buffer[i].busy);
+		}
         printCiclo();
     }
 	/*int i;

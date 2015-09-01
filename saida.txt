@@ -1,6 +1,6 @@
 arquitetura:
   somador --- 4
-  multiplicador --- 2
+  multiplicador --- 10
   busca de instrucoes --- 4
   janela de instrucoes --- 40
   buffer de carga --- 3
@@ -169,43 +169,178 @@ DADO: 1
 DADO: 2
 DADO: -3
 
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+
+
+Destino: 0
+Origem: 0
+Busy: 0
 CICLO: 1
 EMISSAO              | UNIDADE DE ENDERECO  | ESTACAO DE RESERVA   | UNIDADE FUNCIONAL    | ESCRITA              |
 ---------------------|----------------------|----------------------|----------------------|----------------------|
 ---------------------|----------------------|----------------------|----------------------|----------------------|
 
-ADDDDDDDDDDDDDDteste: 10CICLO: 2
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+CICLO: 2
 EMISSAO              | UNIDADE DE ENDERECO  | ESTACAO DE RESERVA   | UNIDADE FUNCIONAL    | ESCRITA              |
 ---------------------|----------------------|----------------------|----------------------|----------------------|
 add R0, R1, R30      | ---                  | ---                  | ---                  | ---                  | 
 addi R9, R2, -100    | ---                  | ---                  | ---                  | ---                  | 
 ---------------------|----------------------|----------------------|----------------------|----------------------|
 
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+
+
+Destino: 0
+Origem: 0
+Busy: 0
 CICLO: 3
 EMISSAO              | UNIDADE DE ENDERECO  | ESTACAO DE RESERVA   | UNIDADE FUNCIONAL    | ESCRITA              |
 ---------------------|----------------------|----------------------|----------------------|----------------------|
-bge R2, R4, 5        | ---                  | ---                  | ---                  | ---                  | 
-sub R7, R8, R9       | ---                  | ---                  | ---                  | ---                  | 
+bge R2, R4, 5        | ---                  | add Q1, Q30(ES0)     | add 0, 0(US0)        | ---                  | 
+sub R7, R8, R9       | ---                  | addi Q2, -100(ES1)   | addi 0, -100(US1)    | ---                  | 
 ---------------------|----------------------|----------------------|----------------------|----------------------|
 
+
+
+Destino: 10
+Origem: 100
+Busy: 1
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+
+
+Destino: 0
+Origem: 0
+Busy: 0
 CICLO: 4
 EMISSAO              | UNIDADE DE ENDERECO  | ESTACAO DE RESERVA   | UNIDADE FUNCIONAL    | ESCRITA              |
 ---------------------|----------------------|----------------------|----------------------|----------------------|
-ld R10, 100          | ---                  | ---                  | ---                  | ---                  | 
-li R5, -2042         | ---                  | ---                  | ---                  | ---                  | 
+ld R10, 100          | ---                  | bge Q4, Q5(ES2)      | add 0, 0(US0)        | ---                  | 
+li R5, -2042         | ---                  | sub Q8, Q9(ES3)      | bge 0, 0(US2)        | ---                  | 
+---                  | ---                  | ---                  | sub 0, 0(US3)        | ---                  | 
 ---------------------|----------------------|----------------------|----------------------|----------------------|
 
+
+
+Destino: 10
+Origem: 100
+Busy: 1
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+
+
+Destino: 0
+Origem: 0
+Busy: 0
 CICLO: 5
 EMISSAO              | UNIDADE DE ENDERECO  | ESTACAO DE RESERVA   | UNIDADE FUNCIONAL    | ESCRITA              |
 ---------------------|----------------------|----------------------|----------------------|----------------------|
-mult R11, R12, R13   | ---                  | ---                  | ---                  | ---                  | 
-div R15, R16, R17    | ---                  | ---                  | ---                  | ---                  | 
+mult R11, R12, R13   | ---                  | li -2042, 0(ES1)     | li -2042, 0(US1)     | ---                  | 
+div R15, R16, R17    | ---                  | ---                  | sub 0, 0(US3)        | ---                  | 
 ---------------------|----------------------|----------------------|----------------------|----------------------|
 
-ADDDDDDDDDDDDDDteste: 10CICLO: 6
+
+
+Destino: 10
+Origem: 100
+Busy: 1
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+CICLO: 6
 EMISSAO              | UNIDADE DE ENDERECO  | ESTACAO DE RESERVA   | UNIDADE FUNCIONAL    | ESCRITA              |
 ---------------------|----------------------|----------------------|----------------------|----------------------|
-add R18, R19, R20    | ---                  | ---                  | ---                  | ---                  | 
-sd 123, R22          | ---                  | ---                  | ---                  | ---                  | 
+add R18, R19, R20    | ---                  | mult Q12, Q13(EM0)   | mult 0, 0(UM0)       | ---                  | 
+sd 123, R22          | ---                  | div Q16, Q17(EM1)    | div 0, 0(UM1)        | ---                  | 
+---------------------|----------------------|----------------------|----------------------|----------------------|
+
+
+
+Destino: 10
+Origem: 100
+Busy: 1
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+CICLO: 7
+EMISSAO              | UNIDADE DE ENDERECO  | ESTACAO DE RESERVA   | UNIDADE FUNCIONAL    | ESCRITA              |
+---------------------|----------------------|----------------------|----------------------|----------------------|
+---                  | ---                  | add Q19, Q20(ES0)    | add 0, 0(US0)        | ---                  | 
+---                  | ---                  | ---                  | mult 0, 0(UM0)       | ---                  | 
+---                  | ---                  | ---                  | div 0, 0(UM1)        | ---                  | 
+---------------------|----------------------|----------------------|----------------------|----------------------|
+
+
+
+Destino: 10
+Origem: 100
+Busy: 1
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+
+
+Destino: 0
+Origem: 0
+Busy: 0
+CICLO: 8
+EMISSAO              | UNIDADE DE ENDERECO  | ESTACAO DE RESERVA   | UNIDADE FUNCIONAL    | ESCRITA              |
+---------------------|----------------------|----------------------|----------------------|----------------------|
+---                  | ---                  | ---                  | add 0, 0(US0)        | ---                  | 
 ---------------------|----------------------|----------------------|----------------------|----------------------|
 

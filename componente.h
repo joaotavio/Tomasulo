@@ -52,6 +52,7 @@ typedef struct comp_unidade_funcional {
 typedef struct buffer{
 	int origem;
 	int destino;
+	bool busy;
 } Buffer;
 
 typedef struct comp_buffer {
@@ -103,6 +104,8 @@ char* ufToString(UnidadeFuncional uf);
 /* BUFFER LOAD/STORE */
 void inicializaBuffer(ComponenteBuffer *buffer);
 bool bufferCheio(ComponenteBuffer buf);
+void bufferInsere(ComponenteBuffer *buf, int origem, int destino);
+int procuraBuffer(ComponenteBuffer buf);
 
 /* REGISTRADOR */
 void insereFilaRegistrador(Registrador *reg, int posicao, int estacao);

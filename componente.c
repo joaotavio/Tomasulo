@@ -274,6 +274,7 @@ void inicializaBuffer(ComponenteBuffer *buf){
 void bufferInsere(ComponenteBuffer *buf, int origem, int destino){
     buf->buffer[buf->tam].origem = origem;
     buf->buffer[buf->tam].destino = destino;
+	buf->buffer[buf->tam].busy = true;
     buf->tam++;
 }
 
@@ -281,6 +282,16 @@ bool bufferCheio(ComponenteBuffer buf){
     return buf.tam == buf.tamMax;
 }
 
+int procuraBuffer(ComponenteBuffer buf){
+	int i;
+	for(i = 0; i < buf.tamMax; i++){
+		if(buf.buffer[i].busy == false){
+			return i;
+		}
+	}
+	
+	return -1;
+}
 
 /* REGISTRADOR */
 
