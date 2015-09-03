@@ -44,7 +44,8 @@ char **print_er;
 int num_print_er;
 char **print_uf;
 int num_print_uf;
-
+char *print_ue;
+int num_print_ue;
 
 /* FUNÇÕES PARA PRINT */
 
@@ -66,10 +67,12 @@ void printCiclo(){
         free(str);
 
         /* UNIDADE DE ENDEREÇO */
-        //if (num_print_ue <= i)
+        if (num_print_ue <= i){
+			//printf("print ciclo\n");
             strcpy(str, "---");
-        //else
-            //str = instToString(print_emitidas[i]);
+		}
+        else
+            str = print_ue;
         printf("%-20s | ", str);
         free(str);
 
@@ -114,6 +117,7 @@ void inicializaPrint(){
     num_emitidas = 0;
     num_print_er = 0;
     num_print_uf = 0;
+	num_print_ue = 0;
 }
 
 void inserePrintEmitidas(Instrucao inst){
@@ -137,6 +141,15 @@ void inserePrintUF(UnidadeFuncional uf, int posicao, char nome[]){
     num_print_uf++;
 }
 
+void inserePrintUE(UnidadeEndereco ue){
+	//printf("InserePrintUE\n");
+	print_ue = (char*)malloc(sizeof(char));
+	char *str = ueToString(ue);
+	sprintf(print_ue, "%s", str);
+	free(str);
+	num_print_ue++;
+}
+
 void printRegistrador(){
 
 }
@@ -148,8 +161,8 @@ bool busca(){
     Instrucao inst;
     int i;
     for (i = 0; i < qtd_busca_inst && !janelaCheia(janela); i++){
-        inst = memoriaObterInst(pc);
-        inst.id = pc;
+        inst = memoriaObterInst(pc); 	//busca a proxima inst
+        inst.id = pc;					//id para dependencias
         switch (inst.opcode){
             case EXIT:
                 return !janelaVazia(janela);
@@ -194,37 +207,36 @@ bool emissao(){
             inst = janela.inst[j];
             switch (inst.opcode){
                 case LD:
-                    posicao = procuraBuffer(load);
-                    
-                    if(posicao > -1){
-                        janelaRemove(j);
-                        bufferInsere(&load, inst.op1, inst.dest);
-                        foiEmitida = true;
-                    }
-                    else {
-                        hist_destino[inst.dest] = true;
-                    }
+                    if(!uEnderecoCheia()){
+						janelaRemove(j);
+						//printf("Origem: %d -- Destino: %d\n\n", inst.op1, inst.dest);
+						uEnderecoInsere(&unidadeEndereco, inst.opcode, inst.op1, inst.dest);
+						foiEmitida = true;
+					}
                     break;
                 case SD:                    
-                    janelaRemove(j);
-                    foiEmitida = true;
-                    break;
+                    if(!uEnderecoCheia()){
+						janelaRemove(j);
+						uEnderecoInsere(&unidadeEndereco, inst.opcode, inst.op1, inst.dest);
+						foiEmitida = true;
+					}
+					break;
                 case LI:
                     posicao = procuraUF(somador, pos_anterior_somador);
 
-                    if (posicao == -1)
-                        posicao = procuraEstacao(er_somador);
+                    if (posicao == -1) //UF cheia
+                        posicao = procuraEstacao(er_somador); //procura ER livre
                     else
-                        pos_anterior_somador = posicao + 1;
+                        pos_anterior_somador = posicao + 1; //tem pos UF
                     
-                    if (posicao > -1 && !hist_destino[inst.dest]){                        
+                    if (posicao > -1 && !hist_destino[inst.dest]){ //Se houver posicao e nao tiver dep.                       
                         janelaRemove(j);
-                        insereFilaRegistrador(registrador, inst.dest, posicao);
-                        estacaoInsere(&er_somador, inst.opcode, -1, -1, inst.op1, 0, posicao);
-                        foiEmitida = true;
+                        insereFilaRegistrador(registrador, inst.dest, posicao); //Insere na fila
+                        estacaoInsere(&er_somador, inst.opcode, -1, -1, inst.op1, 0, posicao); //Insere na ER
+                        foiEmitida = true; //Marca que foi emitida
                     }
                     else {
-                        hist_destino[inst.dest] = true;
+                        hist_destino[inst.dest] = true; //?
                     }
                     break;
                 case BEQ:
@@ -337,7 +349,7 @@ bool pulso(){
     /* EXECUÇÃO SOMADOR */
     for (i = 0; i < somador.tamMax; ++i) {
         if (somador.un_funcional[i].busy){
-            if (somador.un_funcional[i].ciclos == 0){
+            if (somador.un_funcional[i].ciclos == 0){ //quando chegar no ciclo 0, realiza a operacao
                 switch (somador.un_funcional[i].opcode){
                     case LI: 
                         break;
@@ -364,12 +376,13 @@ bool pulso(){
                     default:
                         break;
                 }
-                //chamar função escreve()
-                uFuncionalRemove(&somador, i);
+                //chamar função escreve() //chamar para escrever
+                uFuncionalRemove(&somador, i); 
             }            
         }
     }
 
+	/* EXECUCAO MULTIPLICADOR */
     for (i = 0; i < multiplicador.tamMax; ++i) {
         if (multiplicador.un_funcional[i].busy){
             if (multiplicador.un_funcional[i].ciclos == 0){
@@ -470,6 +483,32 @@ bool pulso(){
         }
     }
 
+		/* Atualiza Unidade de Endereco */
+	if(unidadeEndereco.busy){
+		int posicao;
+		inserePrintUE(unidadeEndereco);
+		switch(unidadeEndereco.opcode){
+			case LD:
+				posicao = procuraBuffer(load);
+				if(posicao > -1){
+					bufferInsere(&load, unidadeEndereco.origem, unidadeEndereco.destino);
+					uEnderecoRemove(&unidadeEndereco);
+				}
+				break;
+			case SD:
+				posicao = procuraBuffer(store);
+				if(posicao > -1){
+					bufferInsere(&load, unidadeEndereco.origem, unidadeEndereco.destino);
+					uEnderecoRemove(&unidadeEndereco);
+				}
+				break;
+			default:
+				break;
+		}
+	}
+	
+		/* Atualiza Buffer */
+	
     /* ATUALIZA SOMADOR */
     for (i = 0; i < somador.tamMax; ++i) {
         if (somador.un_funcional[i].busy){            
@@ -502,13 +541,13 @@ void iniciarTomasulo(){
         flag_emissao = emissao();
         flag_busca = busca();
 
-        /*int i;
+        int i;
         for(i = 0; i< NUM_REGISTRADOR; i++){
             printf("\n--------------------------\n");
             printf("REGISTRADOR %d\n", i);
             mostraFila(registrador[i].qi);
             printf("\n--------------------------\n");
-        }*/
+        }
 
         if (!flag_busca && !flag_emissao && !flag_pulso)
             break;

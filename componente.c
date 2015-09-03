@@ -293,6 +293,42 @@ bool bufferCheio(ComponenteBuffer buf){
     return buf.tam == buf.tamMax;
 }
 
+/*UNIDADE DE ENDERECO*/
+void uEnderecoInsere(UnidadeEndereco *ue, Operacoes opcode, int origem, int destino){
+	ue->opcode = opcode;
+	ue->origem = origem;
+	ue->destino = destino;
+	ue->busy = true;
+}
+
+void uEnderecoRemove(UnidadeEndereco *ue){
+	ue->opcode = NOP;
+	ue->origem = 0;
+	ue->destino = 0;
+	ue->busy = false;
+}
+
+bool uEnderecoCheia(){
+	return unidadeEndereco.busy;
+}
+	
+char* ueToString(UnidadeEndereco ue){
+	char *str = (char*)malloc(sizeof(char));
+    char *strOpcode = (char*)malloc(sizeof(char));
+	switch(ue.opcode){
+		case SD:
+			strcpy(strOpcode, "sd");
+            break;
+		case LD:
+			strcpy(strOpcode, "ld");
+            break;
+		default:
+			break;
+	}
+	sprintf(str, "%s %d, %d", strOpcode, ue.origem, ue.destino);
+    free(strOpcode);
+    return str;
+}
 
 /* REGISTRADOR */
 void inicializaRegistrador(Registrador reg[], int tamFila){

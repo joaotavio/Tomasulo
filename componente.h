@@ -65,6 +65,7 @@ typedef struct un_endereco{
 	Operacoes opcode;
 	int origem;
 	int destino;
+	bool busy;
 } UnidadeEndereco;
 
 extern Janela janela;
@@ -106,6 +107,12 @@ void inicializaBuffer(ComponenteBuffer *buffer);
 void bufferInsere(ComponenteBuffer *buf, int origem, int destino);
 int procuraBuffer(ComponenteBuffer buf);
 bool bufferCheio(ComponenteBuffer buf);
+
+/* UNIDADE DE ENDERECO*/
+void uEnderecoInsere(UnidadeEndereco *ue, Operacoes opcode, int origem, int destino);
+void uEnderecoRemove(UnidadeEndereco *ue);
+bool uEnderecoCheia();
+char* ueToString(UnidadeEndereco ue);
 
 /* REGISTRADOR */
 void inicializaRegistrador(Registrador reg[], int tamFila);

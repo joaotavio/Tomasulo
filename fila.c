@@ -54,11 +54,13 @@ bool filaEstaCheia(Fila f){
 }
 
 void mostraFila(Fila f){
-    Celula *aux = f->inicio;
-    while (aux != NULL){
-        printf("%d - ", aux->dado);
-        aux = aux->prox;
-    }
+	Celula *aux = f->inicio;
+	if(!filaEstaVazia(f)){
+		while (aux != NULL){
+			printf("%d - ", aux->dado);
+			aux = aux->prox;
+		}
+	}
 }
 
 void esvazia(Fila f){
