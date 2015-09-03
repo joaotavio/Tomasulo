@@ -121,7 +121,7 @@ Instrucao binarioParaInstrucao(inst_t valor){
 }
 
 char* instToString(Instrucao inst){
-    char *str = (char*)malloc(sizeof(char));
+    char *str = malloc(sizeof(char)*MAX_STR_PRINT);
     switch(inst.opcode){
         case ADD:
             sprintf(str, "%d add R%d, R%d, R%d", inst.id, inst.dest, inst.op1, inst.op2);

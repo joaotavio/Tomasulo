@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "componente.h"
+#include "tomasulo.h"
 
 Janela janela;
 Registrador registrador[NUM_REGISTRADOR];
@@ -102,8 +103,8 @@ int procuraEstacao(ComponenteER er){
 }
 
 char* erToString(EstacaoReserva er){
-    char *str = (char*)malloc(sizeof(char));
-    char *strOpcode = (char*)malloc(sizeof(char));
+    char *str = malloc(sizeof(char)*MAX_STR_PRINT);
+    char strOpcode[10];
     switch(er.opcode){
         case ADD:
             strcpy(strOpcode, "add");
@@ -162,7 +163,6 @@ char* erToString(EstacaoReserva er){
     else
         sprintf(str, "%s Q%d, Q%d", strOpcode, er.qj, er.qk);
 
-    free(strOpcode);
     return str;
 }
 
@@ -209,8 +209,8 @@ int procuraUF(ComponenteUF uf, int posicao){
 }
 
 char* ufToString(UnidadeFuncional uf){
-    char *str = (char*)malloc(sizeof(char));
-    char *strOpcode = (char*)malloc(sizeof(char));
+    char *str = malloc(sizeof(char)*MAX_STR_PRINT);
+    char strOpcode[10];
     switch(uf.opcode){
         case ADD:
             strcpy(strOpcode, "add");
@@ -260,8 +260,7 @@ char* ufToString(UnidadeFuncional uf){
         default:
             break;
     }
-    sprintf(str, "%s %d, %d", strOpcode, uf.vj, uf.vk);
-    free(strOpcode);
+    sprintf(str, "%s %d, %d", strOpcode, uf.vj, uf.vk);    
     return str;
 }
 
@@ -313,8 +312,8 @@ bool uEnderecoCheia(){
 }
 	
 char* ueToString(UnidadeEndereco ue){
-	char *str = (char*)malloc(sizeof(char));
-    char *strOpcode = (char*)malloc(sizeof(char));
+	char *str = malloc(sizeof(char)*MAX_STR_PRINT);
+    char strOpcode[10];
 	switch(ue.opcode){
 		case SD:
 			strcpy(strOpcode, "sd");
@@ -326,7 +325,6 @@ char* ueToString(UnidadeEndereco ue){
 			break;
 	}
 	sprintf(str, "%s %d, %d", strOpcode, ue.origem, ue.destino);
-    free(strOpcode);
     return str;
 }
 

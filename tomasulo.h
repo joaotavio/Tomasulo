@@ -5,6 +5,7 @@
 #include "memoria.h"
 
 #define NUM_COMPONENTES 10
+#define MAX_STR_PRINT 50
 
 /*** VARIÁVEIS GLOBAIS ***/
 

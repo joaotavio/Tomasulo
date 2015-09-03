@@ -26,7 +26,7 @@ void iniciarComponentes(){
     inicializaER(&er_multiplicador, &multiplicador);
     inicializaBuffer(&load);
     inicializaBuffer(&store);
-    inicializaRegistrador(&registrador, somador.tamMax+multiplicador.tamMax);
+    inicializaRegistrador(registrador, somador.tamMax+multiplicador.tamMax);
 }
 
 void iniciar(){

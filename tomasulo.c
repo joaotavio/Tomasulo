@@ -51,7 +51,7 @@ int num_print_ue;
 
 void printCiclo(){
     int i, num;
-    char *str = (char*)malloc(sizeof(char));
+    char str[MAX_STR_PRINT];
     num = MAX(num_emitidas, MAX(num_print_er, num_print_uf));
 
     printf("CICLO: %d\n", cont_ciclos);
@@ -62,35 +62,29 @@ void printCiclo(){
         if (num_emitidas <= i)
             strcpy(str, "---");
         else
-            str = instToString(print_emitidas[i]);
+            strcpy(str, instToString(print_emitidas[i]));
         printf("%-20s | ", str);
-        free(str);
 
         /* UNIDADE DE ENDEREÇO */
-        if (num_print_ue <= i){
-			//printf("print ciclo\n");
-            strcpy(str, "---");
-		}
+        if (num_print_ue <= i)
+            strcpy(str, "---");		
         else
-            str = print_ue;
+            strcpy(str, print_ue);
         printf("%-20s | ", str);
-        free(str);
 
         /* ESTAÇÃO DE RESERVA */
         if (num_print_er <= i)
             strcpy(str, "---");
         else
-            str = print_er[i];
+            strcpy(str, print_er[i]);
         printf("%-20s | ", str);
-        free(str);
 
         /* UNIDADE FUNCIONAL */
         if (num_print_uf <= i)
             strcpy(str, "---");
         else
-            str = print_uf[i];
+            strcpy(str, print_uf[i]);
         printf("%-20s | ", str);
-        free(str);
 
 
         /* ESCRITA */
@@ -99,7 +93,6 @@ void printCiclo(){
         //else
             //str = instToString(print_emitidas[i]);
         printf("%-20s | ", str);
-        free(str);
 
 
         printf("\n");        
@@ -109,8 +102,9 @@ void printCiclo(){
 
 void criaVetorPrint(){
     print_emitidas = (Instrucao*)calloc(100, sizeof(Instrucao));
-    print_er = (char**)calloc(er_somador.tam + er_multiplicador.tam, sizeof(char));
-    print_uf = (char**)calloc(somador.tam + multiplicador.tam, sizeof(char));
+    print_er = (char**)calloc(er_somador.tam + er_multiplicador.tam, sizeof(char)*MAX_STR_PRINT);
+    print_uf = (char**)calloc(somador.tam + multiplicador.tam, sizeof(char)*MAX_STR_PRINT);
+    print_ue = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
 }
 
 void inicializaPrint(){
@@ -126,7 +120,7 @@ void inserePrintEmitidas(Instrucao inst){
 }
 
 void inserePrintER(EstacaoReserva er, int posicao, char nome[]){
-    print_er[num_print_er] = (char*)malloc(sizeof(char));
+    print_er[num_print_er] = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
     char *str = erToString(er);
     sprintf(print_er[num_print_er], "%s(%s%d)", str, nome, posicao);
     free(str);
@@ -134,16 +128,14 @@ void inserePrintER(EstacaoReserva er, int posicao, char nome[]){
 }
 
 void inserePrintUF(UnidadeFuncional uf, int posicao, char nome[]){
-    print_uf[num_print_uf] = (char*)malloc(sizeof(char));
+    print_uf[num_print_uf] = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
     char *str = ufToString(uf);
     sprintf(print_uf[num_print_uf], "%s(%s%d)", str, nome, posicao);
     free(str);
     num_print_uf++;
 }
 
-void inserePrintUE(UnidadeEndereco ue){
-	//printf("InserePrintUE\n");
-	print_ue = (char*)malloc(sizeof(char));
+void inserePrintUE(UnidadeEndereco ue){	
 	char *str = ueToString(ue);
 	sprintf(print_ue, "%s", str);
 	free(str);
@@ -541,13 +533,13 @@ void iniciarTomasulo(){
         flag_emissao = emissao();
         flag_busca = busca();
 
-        int i;
+        /*int i;
         for(i = 0; i< NUM_REGISTRADOR; i++){
             printf("\n--------------------------\n");
             printf("REGISTRADOR %d\n", i);
             mostraFila(registrador[i].qi);
             printf("\n--------------------------\n");
-        }
+        }*/
 
         if (!flag_busca && !flag_emissao && !flag_pulso)
             break;
