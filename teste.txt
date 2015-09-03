@@ -1,18 +1,18 @@
 ARQUITETURA:
-	somador = 4
-	multiplicador = 10
-	busca de instrucoes = 4
-	janela de instrucoes = 40
-	buffer de carga = 3
-	buffer de escrita = 5
+    somador = 4
+    multiplicador = 10
+    busca de instrucoes = 4
+    janela de instrucoes = 40
+    buffer de carga = 3
+    buffer de escrita = 5
     emissao = 2
     memoria = 100
     portas banco de registradores = 32
     imemoria = 0, 20
 
 CICLOS:
-	add = 2
-	addi = 1
+    add = 2
+    addi = 1
     sub = 2
     subi = 1
     mult = 2

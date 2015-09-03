@@ -56,7 +56,7 @@ bool filaEstaCheia(Fila f){
 void mostraFila(Fila f){
     Celula *aux = f->inicio;
     while (aux != NULL){
-        printf("%d\n", aux->dado);
+        printf("%d - ", aux->dado);
         aux = aux->prox;
     }
 }

@@ -38,12 +38,13 @@ int pc;
 
 /* VARIÁVEIS PARA PRINT */
 
-Instrucao print_emitidas[100]; //DEPOIS MUDAR ISSO PARA MALLOC - TALVEZ PODE USAR ISSO PRA DEPENDENCIA
+Instrucao *print_emitidas; //TALVEZ PODE USAR ISSO PRA DEPENDENCIA
 int num_emitidas;
-char *print_er[100];
+char **print_er;
 int num_print_er;
-char *print_uf[100];
+char **print_uf;
 int num_print_uf;
+
 
 /* FUNÇÕES PARA PRINT */
 
@@ -103,6 +104,12 @@ void printCiclo(){
     printf("---------------------|----------------------|----------------------|----------------------|----------------------|\n\n");
 }
 
+void criaVetorPrint(){
+    print_emitidas = (Instrucao*)calloc(100, sizeof(Instrucao));
+    print_er = (char**)calloc(er_somador.tam + er_multiplicador.tam, sizeof(char));
+    print_uf = (char**)calloc(somador.tam + multiplicador.tam, sizeof(char));
+}
+
 void inicializaPrint(){
     num_emitidas = 0;
     num_print_er = 0;
@@ -142,6 +149,7 @@ bool busca(){
     int i;
     for (i = 0; i < qtd_busca_inst && !janelaCheia(janela); i++){
         inst = memoriaObterInst(pc);
+        inst.id = pc;
         switch (inst.opcode){
             case EXIT:
                 return !janelaVazia(janela);
@@ -171,12 +179,13 @@ bool busca(){
     return !janelaVazia(janela);
 }
 
-//procurar unidade funcional livre e colocar na ER associada, se nenhuma tiver livre procura uma estacao de reserva
 //retornar numero de emitidas, se for -1 nao emitiu nada(false)
 bool emissao(){
-    int i, j, posicao, pos_anterior_somador = 0, pos_anterior_mult = 0/*, pos_anterior_load = 0, pos_anterior_store = 0*/;
+    int i, j, posicao, pos_anterior_somador = 0, pos_anterior_mult = 0;
     Instrucao inst;
     bool foiEmitida;
+    bool hist_destino[NUM_REGISTRADOR];
+    memset(hist_destino, false, sizeof(hist_destino));
 
     j = 0;
     for(i = 0; i < qtd_emissao && !janelaVazia(janela); i++){
@@ -185,24 +194,22 @@ bool emissao(){
             inst = janela.inst[j];
             switch (inst.opcode){
                 case LD:
-					//posicao = procuraMemoria(só ver a memoria ta livre?);
-					//if(posicao == -1){
-						posicao = procuraBuffer(load);
-					//} else{
-						//pos_anterior_load = posicao + 1;
-					//}
-					
-					if(posicao > -1){
-						janelaRemove(j);
-						bufferInsere(&load, inst.op1, inst.dest);
-						foiEmitida = true;
-					}
+                    posicao = procuraBuffer(load);
+                    
+                    if(posicao > -1){
+                        janelaRemove(j);
+                        bufferInsere(&load, inst.op1, inst.dest);
+                        foiEmitida = true;
+                    }
+                    else {
+                        hist_destino[inst.dest] = true;
+                    }
                     break;
                 case SD:                    
                     janelaRemove(j);
                     foiEmitida = true;
                     break;
-                case LI: //ok
+                case LI:
                     posicao = procuraUF(somador, pos_anterior_somador);
 
                     if (posicao == -1)
@@ -210,18 +217,22 @@ bool emissao(){
                     else
                         pos_anterior_somador = posicao + 1;
                     
-                    if (posicao > -1){                        
+                    if (posicao > -1 && !hist_destino[inst.dest]){                        
                         janelaRemove(j);
+                        insereFilaRegistrador(registrador, inst.dest, posicao);
                         estacaoInsere(&er_somador, inst.opcode, -1, -1, inst.op1, 0, posicao);
                         foiEmitida = true;
-                    }                  
+                    }
+                    else {
+                        hist_destino[inst.dest] = true;
+                    }
                     break;
-                case BEQ: //ok
-                case BNE: //ok
-                case BG: //ok
-                case BGE: //ok
-                case BL: //ok
-                case BLE: //ok
+                case BEQ:
+                case BNE:
+                case BG:
+                case BGE:
+                case BL:
+                case BLE:
                     posicao = procuraUF(somador, pos_anterior_somador);
                     if (posicao == -1)
                         posicao = procuraEstacao(er_somador);
@@ -234,60 +245,76 @@ bool emissao(){
                         foiEmitida = true;
                     }
                     break;
-                case ADD: //ok             
-                case SUB:  //ok
+                case ADD:                    
+                case SUB:
                     posicao = procuraUF(somador, pos_anterior_somador);
                     if (posicao == -1)
                         posicao = procuraEstacao(er_somador);
                     else
                         pos_anterior_somador = posicao + 1;
 
-                    if (posicao > -1){
+                    if (posicao > -1 && !hist_destino[inst.dest]){
                         janelaRemove(j);
+                        insereFilaRegistrador(registrador, inst.dest, posicao);
                         estacaoInsere(&er_somador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
                         foiEmitida = true;
-                    }                   
+                    }
+                    else {
+                        hist_destino[inst.dest] = true;
+                    }
                     break;
-                case ADDI:  //ok
-                case SUBI: //ok
+                case ADDI:
+                case SUBI:
                     posicao = procuraUF(somador, pos_anterior_somador);
                     if (posicao == -1)
                         posicao = procuraEstacao(er_somador);
                     else
                         pos_anterior_somador = posicao + 1;
 
-                    if (posicao > -1){
-                        janelaRemove(j);                        
+                    if (posicao > -1 && !hist_destino[inst.dest]){                        
+                        janelaRemove(j);
+                        insereFilaRegistrador(registrador, inst.dest, posicao);
                         estacaoInsere(&er_somador, inst.opcode, inst.op1, -1, 0, inst.op2, posicao);
                         foiEmitida = true;
                     }
+                    else {
+                        hist_destino[inst.dest] = true;
+                    }
                     break;
-                case MULT:  //ok                   
-                case DIV: //ok
+                case MULT:                    
+                case DIV:
                     posicao = procuraUF(multiplicador, pos_anterior_mult);
                     if (posicao == -1)
                         posicao = procuraEstacao(er_multiplicador);
                     else
                         pos_anterior_mult = posicao +1 ;
 
-                    if (posicao > -1){
+                    if (posicao > -1 && !hist_destino[inst.dest]){
                         janelaRemove(j);
+                        insereFilaRegistrador(registrador, inst.dest, posicao);
                         estacaoInsere(&er_multiplicador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
                         foiEmitida = true;
                     }
+                    else {
+                        hist_destino[inst.dest] = true;
+                    }
                     break;
-                case MULTI:   //ok                  
-                case DIVI: //ok
+                case MULTI:                    
+                case DIVI:
                     posicao = procuraUF(multiplicador, pos_anterior_mult);
                     if (posicao == -1)
                         posicao = procuraEstacao(er_multiplicador);
                     else
                         pos_anterior_mult = posicao +1 ;
 
-                    if (posicao > -1){
-                        janelaRemove(j);                        
+                    if (posicao > -1 && !hist_destino[inst.dest]){
+                        janelaRemove(j);
+                        insereFilaRegistrador(registrador, inst.dest, posicao);
                         estacaoInsere(&er_multiplicador, inst.opcode, inst.op1, -1, 0, inst.op2, posicao);
                         foiEmitida = true;
+                    }
+                    else {
+                        hist_destino[inst.dest] = true;
                     }
                     break;
                 default:
@@ -367,7 +394,7 @@ bool pulso(){
     /* Verifica ER Somador */
     for (i = 0; i < er_somador.tamMax; ++i) {
         if (er_somador.est_reserva[i].busy){
-            inserePrintER(er_somador.est_reserva[i], i, "ES");
+            //inserePrintER(er_somador.est_reserva[i], i, "ES");
             if (!somador.un_funcional[i].busy){
                 switch (er_somador.est_reserva[i].opcode){
                     case LI:
@@ -407,14 +434,17 @@ bool pulso(){
                         break;
                 }
                 estacaoRemove(&er_somador, i);
-            }            
+            }
+            else {
+                inserePrintER(er_somador.est_reserva[i], i, "ES");
+            }
         }
     }
 
     /* Verifica ER Mutiplicador */
     for (i = 0; i < er_multiplicador.tamMax; ++i) {
         if (er_multiplicador.est_reserva[i].busy){
-            inserePrintER(er_multiplicador.est_reserva[i], i, "EM");
+            //inserePrintER(er_multiplicador.est_reserva[i], i, "EM");
             if (!multiplicador.un_funcional[i].busy){
                 switch (er_multiplicador.est_reserva[i].opcode){
                     case MULT:
@@ -433,7 +463,10 @@ bool pulso(){
                         break;
                 }
                 estacaoRemove(&er_multiplicador, i);
-            }            
+            }  
+            else {
+                inserePrintER(er_multiplicador.est_reserva[i], i, "EM");
+            }          
         }
     }
 
@@ -441,7 +474,7 @@ bool pulso(){
     for (i = 0; i < somador.tamMax; ++i) {
         if (somador.un_funcional[i].busy){            
             inserePrintUF(somador.un_funcional[i], i, "US");
-            somador.un_funcional[i].ciclos--;            
+            somador.un_funcional[i].ciclos--;
         }
     }
 
@@ -460,6 +493,7 @@ void iniciarTomasulo(){
     pc = 0;
     cont_ciclos = 0;
     bool flag_busca, flag_emissao, flag_pulso;
+    criaVetorPrint();
 
     //loop principal
     while (true) {
@@ -468,15 +502,17 @@ void iniciarTomasulo(){
         flag_emissao = emissao();
         flag_busca = busca();
 
+        /*int i;
+        for(i = 0; i< NUM_REGISTRADOR; i++){
+            printf("\n--------------------------\n");
+            printf("REGISTRADOR %d\n", i);
+            mostraFila(registrador[i].qi);
+            printf("\n--------------------------\n");
+        }*/
+
         if (!flag_busca && !flag_emissao && !flag_pulso)
             break;
         cont_ciclos++;
-		int i;
-		for(i = 0; i < load.tamMax; i++){
-			printf("\n\nDestino: %d", load.buffer[i].destino);
-			printf("\nOrigem: %d", load.buffer[i].origem);
-			printf("\nBusy: %d\n", load.buffer[i].busy);
-		}
         printCiclo();
     }
 	/*int i;

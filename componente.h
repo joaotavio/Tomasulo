@@ -3,14 +3,14 @@
 
 #include <stdbool.h>
 #include "instrucao.h"
+#include "fila.h"
 
 #define MAX_RESERVA 100
 #define	NUM_REGISTRADOR 32
 
 typedef struct registrador {
 	int64_t valor;
-	int qk[MAX_RESERVA];
-	int tamFila;
+	Fila qi;
 } Registrador;
 
 typedef struct est_reserva{
@@ -103,11 +103,12 @@ char* ufToString(UnidadeFuncional uf);
 
 /* BUFFER LOAD/STORE */
 void inicializaBuffer(ComponenteBuffer *buffer);
-bool bufferCheio(ComponenteBuffer buf);
 void bufferInsere(ComponenteBuffer *buf, int origem, int destino);
 int procuraBuffer(ComponenteBuffer buf);
+bool bufferCheio(ComponenteBuffer buf);
 
 /* REGISTRADOR */
-void insereFilaRegistrador(Registrador *reg, int posicao, int estacao);
+void inicializaRegistrador(Registrador reg[], int tamFila);
+void insereFilaRegistrador(Registrador reg[], int posicao, int estacao);
 
 #endif

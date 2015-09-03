@@ -274,31 +274,34 @@ void inicializaBuffer(ComponenteBuffer *buf){
 void bufferInsere(ComponenteBuffer *buf, int origem, int destino){
     buf->buffer[buf->tam].origem = origem;
     buf->buffer[buf->tam].destino = destino;
-	buf->buffer[buf->tam].busy = true;
+    buf->buffer[buf->tam].busy = true;
     buf->tam++;
+}
+
+int procuraBuffer(ComponenteBuffer buf){
+   int i;
+   for(i = 0; i < buf.tamMax; i++){
+       if(buf.buffer[i].busy == false){
+           return i;
+       }
+   }
+   
+   return -1;
 }
 
 bool bufferCheio(ComponenteBuffer buf){
     return buf.tam == buf.tamMax;
 }
 
-int procuraBuffer(ComponenteBuffer buf){
-	int i;
-	for(i = 0; i < buf.tamMax; i++){
-		if(buf.buffer[i].busy == false){
-			return i;
-		}
-	}
-	
-	return -1;
-}
 
 /* REGISTRADOR */
-
-void inicialzaRegistrador(Registrador *reg){
-
+void inicializaRegistrador(Registrador reg[], int tamFila){
+    int i;
+    for(i = 0; i < NUM_REGISTRADOR; i++){
+        reg[i].qi = criaFila(tamFila);
+    }
 }
 
-void insereFilaRegistrador(Registrador *reg, int posicao, int estacao){
-    
+void insereFilaRegistrador(Registrador reg[], int posicao, int estacao){
+    filaInsere(reg[posicao].qi, estacao);
 }

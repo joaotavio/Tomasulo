@@ -124,55 +124,55 @@ char* instToString(Instrucao inst){
     char *str = (char*)malloc(sizeof(char));
     switch(inst.opcode){
         case ADD:
-            sprintf(str, "add R%d, R%d, R%d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d add R%d, R%d, R%d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case SUB:
-            sprintf(str, "sub R%d, R%d, R%d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d sub R%d, R%d, R%d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case MULT:
-            sprintf(str, "mult R%d, R%d, R%d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d mult R%d, R%d, R%d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case DIV:
-            sprintf(str, "div R%d, R%d, R%d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d div R%d, R%d, R%d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case ADDI:
-            sprintf(str, "addi R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d addi R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case SUBI:
-            sprintf(str, "subi R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d subi R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case MULTI:
-            sprintf(str, "multi R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d multi R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case DIVI:
-            sprintf(str, "divi R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d divi R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case LD:
-            sprintf(str, "ld R%d, %d", inst.dest, inst.op1);
+            sprintf(str, "%d ld R%d, %d", inst.id, inst.dest, inst.op1);
             break;
         case LI:
-            sprintf(str, "li R%d, %d", inst.dest, inst.op1);
+            sprintf(str, "%d li R%d, %d", inst.id, inst.dest, inst.op1);
             break;
         case SD:
-            sprintf(str, "sd %d, R%d", inst.dest, inst.op1);
+            sprintf(str, "%d sd %d, R%d", inst.id, inst.dest, inst.op1);
             break;
         case BEQ:
-            sprintf(str, "beq R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d beq R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case BNE:
-            sprintf(str, "bne R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d bne R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case BG:
-            sprintf(str, "bg R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d bg R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case BGE:
-            sprintf(str, "bge R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d bge R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case BL:
-            sprintf(str, "bl R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d bl R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case BLE:
-            sprintf(str, "ble R%d, R%d, %d", inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d ble R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
             break;
         case JUMP:
             sprintf(str, "jump %d", inst.dest);
