@@ -50,6 +50,7 @@ typedef struct comp_unidade_funcional {
 } ComponenteUF;
 
 typedef struct buffer{
+	Operacoes opcode;
 	int origem;
 	int destino;
 	bool busy;
@@ -104,9 +105,12 @@ char* ufToString(UnidadeFuncional uf);
 
 /* BUFFER LOAD/STORE */
 void inicializaBuffer(ComponenteBuffer *buffer);
-void bufferInsere(ComponenteBuffer *buf, int origem, int destino);
+void bufferInsere(ComponenteBuffer *buf, Operacoes opcode, int origem, int destino);
 int procuraBuffer(ComponenteBuffer buf);
 bool bufferCheio(ComponenteBuffer buf);
+int bufferLivre(ComponenteBuffer buf);
+void bufferRemove(ComponenteBuffer *buf, int posicao);
+char* bfToString(Buffer buffer);
 
 /* UNIDADE DE ENDERECO*/
 void uEnderecoInsere(UnidadeEndereco *ue, Operacoes opcode, int origem, int destino);

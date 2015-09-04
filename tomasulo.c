@@ -46,6 +46,8 @@ char **print_uf;
 int num_print_uf;
 char *print_ue;
 int num_print_ue;
+char **print_bf;
+int num_print_bf;
 
 /* FUNÇÕES PARA PRINT */
 
@@ -55,8 +57,8 @@ void printCiclo(){
     num = MAX(num_emitidas, MAX(num_print_er, num_print_uf));
 
     printf("CICLO: %d\n", cont_ciclos);
-    printf("%-20s | %-20s | %-20s | %-20s | %-20s |\n", "EMISSAO", "UNIDADE DE ENDERECO", "ESTACAO DE RESERVA", "UNIDADE FUNCIONAL", "ESCRITA");
-    printf("---------------------|----------------------|----------------------|----------------------|----------------------|\n");
+    printf("%-20s | %-20s | %-20s | %-20s | %-20s | %-20s |\n", "EMISSAO", "UNIDADE DE ENDERECO", "BUFFER LOAD/STORE", "ESTACAO DE RESERVA", "UNIDADE FUNCIONAL", "ESCRITA");
+    printf("---------------------|----------------------|----------------------|----------------------|---------------------------------------------|\n");
     for (i = 0; i < num; ++i) {
         /* EMITIDAS */
         if (num_emitidas <= i)
@@ -72,6 +74,13 @@ void printCiclo(){
             strcpy(str, print_ue);
         printf("%-20s | ", str);
 
+		/* BUFFER LOAD/STORE*/
+		if (num_print_bf <= i)
+			strcpy(str, "---");
+		else
+			strcpy(str, print_bf[i]);
+		printf("%-20s | ", str);
+			
         /* ESTAÇÃO DE RESERVA */
         if (num_print_er <= i)
             strcpy(str, "---");
@@ -97,14 +106,15 @@ void printCiclo(){
 
         printf("\n");        
     }
-    printf("---------------------|----------------------|----------------------|----------------------|----------------------|\n\n");
+    printf("---------------------|----------------------|----------------------|----------------------|---------------------------------------------|\n\n");
 }
 
 void criaVetorPrint(){
     print_emitidas = (Instrucao*)calloc(100, sizeof(Instrucao));
     print_er = (char**)calloc(er_somador.tam + er_multiplicador.tam, sizeof(char)*MAX_STR_PRINT);
     print_uf = (char**)calloc(somador.tam + multiplicador.tam, sizeof(char)*MAX_STR_PRINT);
-    print_ue = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
+    print_bf = (char**)calloc(load.tam + store.tam, sizeof(char)*MAX_STR_PRINT);
+	print_ue = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
 }
 
 void inicializaPrint(){
@@ -112,6 +122,7 @@ void inicializaPrint(){
     num_print_er = 0;
     num_print_uf = 0;
 	num_print_ue = 0;
+	num_print_bf = 0;
 }
 
 void inserePrintEmitidas(Instrucao inst){
@@ -133,6 +144,14 @@ void inserePrintUF(UnidadeFuncional uf, int posicao, char nome[]){
     sprintf(print_uf[num_print_uf], "%s(%s%d)", str, nome, posicao);
     free(str);
     num_print_uf++;
+}
+
+void inserePrintBF(Buffer buffer, int posicao, char nome[]){
+	print_bf[num_print_bf] = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
+	char *str = bfToString(buffer);
+	sprintf(print_bf[num_print_bf], "%s(%s%d)", str, nome, posicao);
+	free(str);
+	num_print_bf++;
 }
 
 void inserePrintUE(UnidadeEndereco ue){	
@@ -337,8 +356,9 @@ bool emissao(){
 //VERIFICAR TODOS OS BUFFERS, UF, ER ETC
 bool pulso(){
     int i;
-
-    /* EXECUÇÃO SOMADOR */
+	int posicao;
+    
+	/* EXECUÇÃO SOMADOR */
     for (i = 0; i < somador.tamMax; ++i) {
         if (somador.un_funcional[i].busy){
             if (somador.un_funcional[i].ciclos == 0){ //quando chegar no ciclo 0, realiza a operacao
@@ -475,22 +495,49 @@ bool pulso(){
         }
     }
 
+		/*Atualiza Buffer Load/Store */
+	for (i = 0; i < load.tamMax; ++i) {
+		if(load.buffer[i].busy){
+			//if(!memoria.busy){
+				//memoriaInsere();
+				bufferRemove(&load, i);	
+				//printf("\nOrigem: %d\n", load.buffer[i].origem);
+				//printf("\nDestino: %d\n", load.buffer[i].destino);
+			//} else {
+				//inserePrintBF(load.buffer[i], i, "BL");
+			//}
+		}
+	}
+	
+	for (i = 0; i < store.tamMax; ++i) {
+		if(store.buffer[i].busy){
+			//if(!memoria.busy){
+				//memoriaInsere();
+				bufferRemove(&store, i);
+				//printf("\nOrigem: %d\n", store.buffer[i].origem);
+				//printf("\nDestino: %d\n", store.buffer[i].destino);				
+			//} else {
+				//inserePrintBF(load.buffer[i], i, "BS");
+			//}
+		}
+	}
+	
+	
 		/* Atualiza Unidade de Endereco */
 	if(unidadeEndereco.busy){
-		int posicao;
 		inserePrintUE(unidadeEndereco);
 		switch(unidadeEndereco.opcode){
 			case LD:
 				posicao = procuraBuffer(load);
 				if(posicao > -1){
-					bufferInsere(&load, unidadeEndereco.origem, unidadeEndereco.destino);
+					bufferInsere(&load, unidadeEndereco.opcode, unidadeEndereco.origem, unidadeEndereco.destino);
 					uEnderecoRemove(&unidadeEndereco);
 				}
 				break;
 			case SD:
 				posicao = procuraBuffer(store);
 				if(posicao > -1){
-					bufferInsere(&load, unidadeEndereco.origem, unidadeEndereco.destino);
+					bufferInsere(&load, unidadeEndereco.opcode, unidadeEndereco.origem, unidadeEndereco.destino);
 					uEnderecoRemove(&unidadeEndereco);
 				}
 				break;

@@ -270,8 +270,9 @@ void inicializaBuffer(ComponenteBuffer *buf){
     buf->tam = 0;
 }
 
-void bufferInsere(ComponenteBuffer *buf, int origem, int destino){
-    buf->buffer[buf->tam].origem = origem;
+void bufferInsere(ComponenteBuffer *buf, Operacoes opcode, int origem, int destino){
+    buf->buffer[buf->tam].opcode = opcode;
+	buf->buffer[buf->tam].origem = origem;
     buf->buffer[buf->tam].destino = destino;
     buf->buffer[buf->tam].busy = true;
     buf->tam++;
@@ -290,6 +291,43 @@ int procuraBuffer(ComponenteBuffer buf){
 
 bool bufferCheio(ComponenteBuffer buf){
     return buf.tam == buf.tamMax;
+}
+
+int bufferLivre(ComponenteBuffer buf){
+	int i;
+	if(!bufferCheio(buf)){
+		for(i = 0; i < buf.tamMax; i++){
+				if(!buf.buffer[i].busy){
+					return i;
+				}
+		}
+	}
+	return -1;
+}
+
+void bufferRemove(ComponenteBuffer *buf, int posicao){
+	buf->buffer[posicao].opcode = NOP;
+	buf->buffer[posicao].origem = 0;
+	buf->buffer[posicao].destino = 0;
+	buf->buffer[posicao].busy = false;
+	buf->tam--;
+}
+
+char* bfToString(Buffer buffer){
+	char *str = malloc(sizeof(char)*MAX_STR_PRINT);
+    char strOpcode[10];
+    switch(buffer.opcode){
+        case LD:
+            strcpy(strOpcode, "ld");
+            break;
+        case SD:
+            strcpy(strOpcode, "SD");
+            break;
+        default:
+            break;
+    }
+    sprintf(str, "%s %d, %d", strOpcode, buffer.origem, buffer.destino);    
+    return str;
 }
 
 /*UNIDADE DE ENDERECO*/
