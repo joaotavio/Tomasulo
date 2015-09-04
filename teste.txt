@@ -31,7 +31,8 @@ CICLOS:
 
 Texto:
 add R0, R1, R30
-addi R9, R2, -100
+addi R0, R2, -100
+mult R20, R25, R27
 bge R4, R5, 2
 sub R7, R8, R9
 ld R10, 100

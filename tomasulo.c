@@ -50,13 +50,24 @@ char **print_bf;
 int num_print_bf;
 
 /* FUNÇÕES PARA PRINT */
+void printRegistrador(){
+	int i;
+	for(i = 0; i< NUM_REGISTRADOR; i++){
+		if(!filaEstaVazia(registrador[i].qi)){
+			//printf("\n");
+			printf("REGISTRADOR %d\n", i);
+			mostraFila(registrador[i].qi);
+			printf("\n--------------------------\n");
+		}
+    }
+}
 
 void printCiclo(){
     int i, num;
     char str[MAX_STR_PRINT];
     num = MAX(num_emitidas, MAX(num_print_er, num_print_uf));
 
-    printf("CICLO: %d\n", cont_ciclos);
+    printf("\nCICLO: %d\n", cont_ciclos);
     printf("%-20s | %-20s | %-20s | %-20s | %-20s | %-20s |\n", "EMISSAO", "UNIDADE DE ENDERECO", "BUFFER LOAD/STORE", "ESTACAO DE RESERVA", "UNIDADE FUNCIONAL", "ESCRITA");
     printf("---------------------|----------------------|----------------------|----------------------|---------------------------------------------|\n");
     for (i = 0; i < num; ++i) {
@@ -107,6 +118,7 @@ void printCiclo(){
         printf("\n");        
     }
     printf("---------------------|----------------------|----------------------|----------------------|---------------------------------------------|\n\n");
+	printRegistrador();
 }
 
 void criaVetorPrint(){
@@ -161,9 +173,7 @@ void inserePrintUE(UnidadeEndereco ue){
 	num_print_ue++;
 }
 
-void printRegistrador(){
 
-}
 
 /* TOMASULO */ 
 
@@ -495,7 +505,9 @@ bool pulso(){
         }
     }
 
-		/*Atualiza Buffer Load/Store */
+	
+	
+	/*ATUALIZA LOAD/STORE */
 	for (i = 0; i < load.tamMax; ++i) {
 		if(load.buffer[i].busy){
 			//if(!memoria.busy){
@@ -522,8 +534,7 @@ bool pulso(){
 		}
 	}
 	
-	
-		/* Atualiza Unidade de Endereco */
+	/* ATUALIZA UN. ENDERECO */
 	if(unidadeEndereco.busy){
 		inserePrintUE(unidadeEndereco);
 		switch(unidadeEndereco.opcode){
@@ -546,7 +557,6 @@ bool pulso(){
 		}
 	}
 	
-		/* Atualiza Buffer */
 	
     /* ATUALIZA SOMADOR */
     for (i = 0; i < somador.tamMax; ++i) {
@@ -579,14 +589,6 @@ void iniciarTomasulo(){
         flag_pulso = pulso();
         flag_emissao = emissao();
         flag_busca = busca();
-
-        /*int i;
-        for(i = 0; i< NUM_REGISTRADOR; i++){
-            printf("\n--------------------------\n");
-            printf("REGISTRADOR %d\n", i);
-            mostraFila(registrador[i].qi);
-            printf("\n--------------------------\n");
-        }*/
 
         if (!flag_busca && !flag_emissao && !flag_pulso)
             break;
