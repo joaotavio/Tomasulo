@@ -22,8 +22,8 @@ bool decodificaComponente(FILE* arquivo, char str[], int valor){ //MUDAR NOME
     else if (strcmp(str, "busca de instrucoes") == 0){
         qtd_busca_inst = valor;
     }
-    else if (strcmp(str, "janela de instrucoes") == 0){
-        janela.tamMax = valor;
+    else if (strcmp(str, "fila") == 0){
+        tam_fila = valor;
     }
     else if (strcmp(str, "buffer de carga") == 0){
         load.tamMax = valor;

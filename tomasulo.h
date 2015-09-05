@@ -9,6 +9,7 @@
 
 /*** VARIÁVEIS GLOBAIS ***/
 
+extern int tam_fila;
 extern int qtd_busca_inst;
 extern int qtd_emissao;
 

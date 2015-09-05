@@ -17,16 +17,16 @@ void liberarComponentes(){
     free(multiplicador.un_funcional);
     free(load.buffer);
     free(store.buffer);
-    free(janela.inst);
+    freeFila(fila);
 }
 
 void iniciarComponentes(){
-    inicializaJanela();
+    inicializaFila(tam_fila);
     inicializaER(&er_somador, &somador);
     inicializaER(&er_multiplicador, &multiplicador);
     inicializaBuffer(&load);
     inicializaBuffer(&store);
-    inicializaRegistrador(registrador, somador.tamMax+multiplicador.tamMax);
+    inicializaRegistrador(registrador);
 }
 
 void iniciar(){

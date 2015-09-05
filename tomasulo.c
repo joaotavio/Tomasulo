@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 #include "tomasulo.h"
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 /*** VARIÁVEIS GLOBAIS ***/
 
+int tam_fila;
 int qtd_busca_inst;
 int qtd_emissao;
 
@@ -51,15 +53,18 @@ int num_print_bf;
 /* FUNÇÕES PARA PRINT */
 void printRegistrador(){
 	int i;
-	for(i = 0; i< NUM_REGISTRADOR; i++){
-		if(!filaEstaVazia(registrador[i].qi)){
-			//printf("\n");
-			printf("REGISTRADOR %d\n", i);
-			mostraFila(registrador[i].qi);
-			printf("\n--------------------------\n");
-		}
+    printf("REGISTRADORES: \n");
+	for(i = 0; i < NUM_REGISTRADOR/2; i++){
+		printf("R%d = %"PRId64" | ", i, registrador[i].valor);
     }
+    printf("\n");
+    for(i = NUM_REGISTRADOR/2; i < NUM_REGISTRADOR; i++){
+        printf("R%d = %"PRId64" | ", i, registrador[i].valor);
+    }
+    printf("\n\n");
 }
+
+//fazer printMemoria();
 
 void printCiclo(){
     int i, num;
@@ -172,20 +177,18 @@ void inserePrintUE(UnidadeEndereco ue){
 	num_print_ue++;
 }
 
-
-
 /* TOMASULO */ 
 
-//busca instruções na memória e coloca na janela
+//busca instruções na memória e coloca na fila
 bool busca(){
     Instrucao inst;
     int i;
-    for (i = 0; i < qtd_busca_inst && !janelaCheia(janela); i++){
+    for (i = 0; i < qtd_busca_inst && !filaEstaCheia(fila); i++){
         inst = memoriaObterInst(pc); 	//busca a proxima inst
         inst.id = pc;					//id para dependencias
         switch (inst.opcode){
             case EXIT:
-                return !janelaVazia(janela);
+                return !filaEstaVazia(fila);
                 break;
             case JUMP:
                 pc += inst.dest;
@@ -200,149 +203,138 @@ bool busca(){
             case BL:
             case BLE:
                 //QUANDO FOR JMP NAO PODE BUSCAR OUTRAS INSTRUÇÕES ENQUANTO NAO EXECUTAR O JMP
-                janelaInsere(inst);
+                filaInsere(fila, inst);
                 pc++;
                 break;
             default:
-                janelaInsere(inst);
+                filaInsere(fila, inst);
                 pc++;
                 break;
         }
     }
-    return !janelaVazia(janela);
+    return !filaEstaVazia(fila);
 }
 
 //retornar numero de emitidas, se for -1 nao emitiu nada(false)
 bool emissao(){
-    int i, j, posicao, pos_anterior_somador = 0, pos_anterior_mult = 0;
+    int i, posicao, pos_anterior_somador = 0, pos_anterior_mult = 0;
     Instrucao inst;
     bool foiEmitida;
 
-    j = 0;
-    for(i = 0; i < qtd_emissao && !janelaVazia(janela); i++){
+    for(i = 0; i < qtd_emissao && !filaEstaVazia(fila); i++){
         foiEmitida = false;
-        while (!foiEmitida && j < janela.tam) {
-            inst = janela.inst[j];
-            switch (inst.opcode){
-                case LD:
-                    if(!uEnderecoCheia()){
-						janelaRemove(j);
-						//printf("Origem: %d -- Destino: %d\n\n", inst.op1, inst.dest);
-						uEnderecoInsere(&unidadeEndereco, inst.opcode, inst.op1, inst.dest);
-						foiEmitida = true;
-					}
-                    break;
-                case SD:                    
-                    if(!uEnderecoCheia()){
-						janelaRemove(j);
-						uEnderecoInsere(&unidadeEndereco, inst.opcode, inst.op1, inst.dest);
-						foiEmitida = true;
-					}
-					break;
-                case LI:
+        inst = filaPrimeiro(fila);
+        switch (inst.opcode){
+            case LD:
+                if(!uEnderecoCheia()){
+					filaRemove(fila, &inst);						
+					uEnderecoInsere(&unidadeEndereco, inst.opcode, inst.op1, inst.dest);
+					foiEmitida = true;
+				}
+                break;
+            case SD:                    
+                if(!uEnderecoCheia()){
+					filaRemove(fila, &inst);
+					uEnderecoInsere(&unidadeEndereco, inst.opcode, inst.op1, inst.dest);
+					foiEmitida = true;
+				}
+				break;
+            case LI:
                     posicao = procuraUF(somador, pos_anterior_somador);
 
-                    if (posicao == -1) //UF cheia
-                        posicao = procuraEstacao(er_somador); //procura ER livre
-                    else
-                        pos_anterior_somador = posicao + 1; //tem pos UF
-                    
-                    if (posicao > -1){ //Se houver posicao e nao tiver dep.                       
-                        janelaRemove(j);
-                        insereFilaRegistrador(registrador, inst.dest, posicao); //Insere na fila
-                        estacaoInsere(&er_somador, inst.opcode, -1, -1, inst.op1, 0, posicao); //Insere na ER
-                        foiEmitida = true; //Marca que foi emitida
-                    }
-                    break;
-                case BEQ:
-                case BNE:
-                case BG:
-                case BGE:
-                case BL:
-                case BLE:
-                    posicao = procuraUF(somador, pos_anterior_somador);
-                    if (posicao == -1)
-                        posicao = procuraEstacao(er_somador);
-                    else
-                        pos_anterior_somador = posicao + 1;
-                    
-                    if (posicao > -1){
-                        janelaRemove(j);
-                        estacaoInsere(&er_somador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
-                        foiEmitida = true;
-                    }
-                    break;
-                case ADD:                    
-                case SUB:
-                    posicao = procuraUF(somador, pos_anterior_somador);
-                    if (posicao == -1)
-                        posicao = procuraEstacao(er_somador);
-                    else
-                        pos_anterior_somador = posicao + 1;
+                if (posicao == -1) //UF cheia
+                    posicao = procuraEstacao(er_somador); //procura ER livre
+                else
+                    pos_anterior_somador = posicao + 1; //tem pos UF
+                
+                if (posicao > -1 && !er_somador.est_reserva[posicao].busy){ //Se houver posicao e nao tiver dep.                       
+                    filaRemove(fila, &inst);                        
+                    estacaoInsere(&er_somador, inst.opcode, -1, -1, inst.op1, 0, posicao); //Insere na ER
+                    foiEmitida = true; //Marca que foi emitida
+                }
+                break;
+            case BEQ:
+            case BNE:
+            case BG:
+            case BGE:
+            case BL:
+            case BLE:
+                posicao = procuraUF(somador, pos_anterior_somador);
+                if (posicao == -1)
+                    posicao = procuraEstacao(er_somador);
+                else
+                    pos_anterior_somador = posicao + 1;
+                
+                if (posicao > -1 && !er_somador.est_reserva[posicao].busy){
+                    filaRemove(fila, &inst);
+                    estacaoInsere(&er_somador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
+                    foiEmitida = true;
+                }
+                break;
+            case ADD:                    
+            case SUB:
+                posicao = procuraUF(somador, pos_anterior_somador);
+                if (posicao == -1)
+                    posicao = procuraEstacao(er_somador);
+                else
+                    pos_anterior_somador = posicao + 1;
 
-                    if (posicao > -1){
-                        janelaRemove(j);
-                        insereFilaRegistrador(registrador, inst.dest, posicao);
-                        estacaoInsere(&er_somador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
-                        foiEmitida = true;
-                    }
-                    break;
-                case ADDI:
-                case SUBI:
-                    posicao = procuraUF(somador, pos_anterior_somador);
-                    if (posicao == -1)
-                        posicao = procuraEstacao(er_somador);
-                    else
-                        pos_anterior_somador = posicao + 1;
+                if (posicao > -1 && !er_somador.est_reserva[posicao].busy){
+                    filaRemove(fila, &inst);                        
+                    estacaoInsere(&er_somador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
+                    foiEmitida = true;
+                }
+                break;
+            case ADDI:
+            case SUBI:
+                posicao = procuraUF(somador, pos_anterior_somador);
+                if (posicao == -1)
+                    posicao = procuraEstacao(er_somador);
+                else
+                    pos_anterior_somador = posicao + 1;
 
-                    if (posicao > -1){                        
-                        janelaRemove(j);
-                        insereFilaRegistrador(registrador, inst.dest, posicao);
-                        estacaoInsere(&er_somador, inst.opcode, inst.op1, -1, 0, inst.op2, posicao);
-                        foiEmitida = true;
-                    }
-                    break;
-                case MULT:                    
-                case DIV:
-                    posicao = procuraUF(multiplicador, pos_anterior_mult);
-                    if (posicao == -1)
-                        posicao = procuraEstacao(er_multiplicador);
-                    else
-                        pos_anterior_mult = posicao +1 ;
+                if (posicao > -1 && !er_somador.est_reserva[posicao].busy){                        
+                    filaRemove(fila, &inst);                        
+                    estacaoInsere(&er_somador, inst.opcode, inst.op1, -1, 0, inst.op2, posicao);
+                    foiEmitida = true;
+                }
+                break;
+            case MULT:
+            case DIV:
+                posicao = procuraUF(multiplicador, pos_anterior_mult);
+                if (posicao == -1)
+                    posicao = procuraEstacao(er_multiplicador);
+                else
+                    pos_anterior_mult = posicao +1 ;
 
-                    if (posicao > -1){
-                        janelaRemove(j);
-                        insereFilaRegistrador(registrador, inst.dest, posicao);
-                        estacaoInsere(&er_multiplicador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
-                        foiEmitida = true;
-                    }
-                    break;
-                case MULTI:                    
-                case DIVI:
-                    posicao = procuraUF(multiplicador, pos_anterior_mult);
-                    if (posicao == -1)
-                        posicao = procuraEstacao(er_multiplicador);
-                    else
-                        pos_anterior_mult = posicao +1 ;
+                if (posicao > -1 && !er_multiplicador.est_reserva[posicao].busy){
+                    filaRemove(fila, &inst);                        
+                    estacaoInsere(&er_multiplicador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
+                    foiEmitida = true;
+                }
+                break;
+            case MULTI:
+            case DIVI:
+                posicao = procuraUF(multiplicador, pos_anterior_mult);
+                if (posicao == -1)
+                    posicao = procuraEstacao(er_multiplicador);
+                else
+                    pos_anterior_mult = posicao +1 ;
 
-                    if (posicao > -1){
-                        janelaRemove(j);
-                        insereFilaRegistrador(registrador, inst.dest, posicao);
-                        estacaoInsere(&er_multiplicador, inst.opcode, inst.op1, -1, 0, inst.op2, posicao);
-                        foiEmitida = true;
-                    }
-                    break;
-                default:
-                    break;
-            }
-            if (!foiEmitida)
-                j++;
+                if (posicao > -1 && !er_multiplicador.est_reserva[posicao].busy){
+                    filaRemove(fila, &inst);
+                    estacaoInsere(&er_multiplicador, inst.opcode, inst.op1, -1, 0, inst.op2, posicao);
+                    foiEmitida = true;
+                }
+                break;
+            default:
+                break;
         }
         if (foiEmitida)
             inserePrintEmitidas(inst);
     }
 
-    return janela.tam > 0 || num_emitidas > 0;
+    return fila->tam > 0 || num_emitidas > 0;
 }
 
 //VERIFICAR TODOS OS BUFFERS, UF, ER ETC

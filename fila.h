@@ -2,10 +2,11 @@
 #define FILA_H
 
 #include <stdbool.h>
+#include "instrucao.h"
 
 typedef struct celula Celula;
 struct celula {
-    int dado;
+    Instrucao inst;
     Celula *prox;
 };
 
@@ -18,8 +19,9 @@ struct fila {
 };
 
 Fila criaFila(int tamMax);
-void filaInsere(Fila f, int valor);
-bool filaRemove(Fila f, int *retorno);
+void filaInsere(Fila f, Instrucao inst);
+bool filaRemove(Fila f, Instrucao *retorno);
+Instrucao filaPrimeiro(Fila f);
 bool filaEstaVazia(Fila f);
 bool filaEstaCheia(Fila f);
 void mostraFila(Fila f);

@@ -4,7 +4,7 @@
 #include "componente.h"
 #include "tomasulo.h"
 
-Janela janela;
+Fila fila;
 Registrador registrador[NUM_REGISTRADOR];
 UnidadeEndereco unidadeEndereco;
 ComponenteER er_somador;
@@ -15,45 +15,9 @@ ComponenteBuffer load;
 ComponenteBuffer store;
 
 
-/* JANELA */
-void inicializaJanela(){
-    janela.inst = (Instrucao*)calloc(janela.tamMax, sizeof(Instrucao));
-    janela.tam = 0;
-}
-
-void janelaInsere(Instrucao inst){
-    janela.inst[janela.tam] = inst;
-    janela.tam++;
-}
-
-Instrucao janelaRemove(int posicao){
-    if (janelaVazia(janela))
-        return (Instrucao){0};
-    Instrucao retorno = janela.inst[posicao];
-	int i;
-	
-	for(i = posicao; i < (janela.tam - 1); i++){
-		janela.inst[i] = janela.inst[i+1];
-	}
-	
-	janela.tam--;
-	
-    return retorno;
-}
-
-bool janelaVazia(Janela janela){
-    return janela.tam == 0;
-}
-
-bool janelaCheia(Janela janela){
-    return janela.tam == janela.tamMax;
-}
-
-void mostraJanela(){
-    int i;
-    for (i = 0; i < janela.tam; ++i) {
-        printInstrucao(janela.inst[i]);
-    }
+/* FILA */
+void inicializaFila(int tamanho){
+    fila = criaFila(tamanho);
 }
 
 /* ESTAÇÃO DE RESERVA */
@@ -365,13 +329,9 @@ char* ueToString(UnidadeEndereco ue){
 }
 
 /* REGISTRADOR */
-void inicializaRegistrador(Registrador reg[], int tamFila){
+void inicializaRegistrador(Registrador reg[]){
     int i;
     for(i = 0; i < NUM_REGISTRADOR; i++){
-        reg[i].qi = criaFila(tamFila);
+        reg[i].qi = -1;
     }
-}
-
-void insereFilaRegistrador(Registrador reg[], int posicao, int estacao){
-    filaInsere(reg[posicao].qi, estacao);
 }

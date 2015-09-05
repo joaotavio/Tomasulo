@@ -10,7 +10,7 @@
 
 typedef struct registrador {
 	int64_t valor;
-	Fila qi;
+	int qi;
 } Registrador;
 
 typedef struct est_reserva{
@@ -28,12 +28,6 @@ typedef struct comp_est_reserva {
 	int tam;
 	int tamMax;
 } ComponenteER;
-
-typedef struct janela {
-    Instrucao *inst;
-    int tam;
-    int tamMax;
-} Janela;
 
 typedef struct unidade_funcional {
 	Operacoes opcode;
@@ -69,7 +63,7 @@ typedef struct un_endereco{
 	bool busy;
 } UnidadeEndereco;
 
-extern Janela janela;
+extern Fila fila;
 extern Registrador registrador[NUM_REGISTRADOR];
 extern UnidadeEndereco unidadeEndereco;
 extern ComponenteER er_somador;
@@ -79,13 +73,8 @@ extern ComponenteUF multiplicador;
 extern ComponenteBuffer load;
 extern ComponenteBuffer store;
 
-/* JANELA */
-void inicializaJanela();
-void janelaInsere(Instrucao inst);
-Instrucao janelaRemove(int posicao);
-bool janelaVazia(Janela janela);
-bool janelaCheia(Janela janela);
-void mostraJanela();
+/* FILA */
+void inicializaFila(int tamanho);
 
 /* ESTAÇÃO DE RESERVA */
 void inicializaER(ComponenteER *er, ComponenteUF *uf);
@@ -119,7 +108,6 @@ bool uEnderecoCheia();
 char* ueToString(UnidadeEndereco ue);
 
 /* REGISTRADOR */
-void inicializaRegistrador(Registrador reg[], int tamFila);
-void insereFilaRegistrador(Registrador reg[], int posicao, int estacao);
+void inicializaRegistrador(Registrador reg[]);
 
 #endif

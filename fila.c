@@ -10,13 +10,13 @@ Fila criaFila(int tamMax){
     return fila;
 }
 
-void filaInsere(Fila f, int valor){
+void filaInsere(Fila f, Instrucao valor){
     if (filaEstaCheia(f))
         return;
     
     Celula *nova;
     nova = malloc(sizeof(Celula));
-    nova->dado = valor;
+    nova->inst = valor;
     nova->prox = NULL;
 
     if (filaEstaVazia(f))
@@ -28,12 +28,12 @@ void filaInsere(Fila f, int valor){
     f->tam++;
 }
 
-bool filaRemove(Fila f, int *retorno){
+bool filaRemove(Fila f, Instrucao *retorno){
     if (filaEstaVazia(f))
         return false;
 
     Celula *alvo = f->inicio;
-    *retorno = alvo->dado;
+    *retorno = alvo->inst;
 
     if (f->inicio == f->fim)
         f->fim = NULL;
@@ -45,6 +45,13 @@ bool filaRemove(Fila f, int *retorno){
     return true;
 }
 
+Instrucao filaPrimeiro(Fila f){
+    if (filaEstaVazia(f))
+        return (Instrucao){0};
+
+    return f->inicio->inst;
+}
+
 bool filaEstaVazia(Fila f){
     return f->tam == 0;
 }
@@ -54,19 +61,17 @@ bool filaEstaCheia(Fila f){
 }
 
 void mostraFila(Fila f){
-	Celula *aux = f->inicio;
-	if(!filaEstaVazia(f)){
-		while (aux != NULL){
-			printf("%d - ", aux->dado);
-			aux = aux->prox;
-		}
-	}
+    Celula *aux = f->inicio;
+    while (aux != NULL){
+        printInstrucao(aux->inst);
+        aux = aux->prox;
+    }
 }
 
 void esvazia(Fila f){
-    int dado;
+    Instrucao inst;
     while (f->tam > 0)
-        filaRemove(f, &dado);
+        filaRemove(f, &inst);
 }
 
 void freeFila(Fila f){
