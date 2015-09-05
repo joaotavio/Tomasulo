@@ -37,9 +37,6 @@ bool decodificaComponente(FILE* arquivo, char str[], int valor){ //MUDAR NOME
     else if (strcmp(str, "memoria") == 0){
         tam_memoria = valor;
     }
-    else if (strcmp(str, "portas banco de registradores") == 0){
-        qtd_portas_reg = valor;
-    }
     else if (strcmp(str, "imemoria") == 0){
         intervalo_mem_x = valor;
         if (fscanf(arquivo, " ,%d", &valor) != 1)

@@ -4,14 +4,13 @@
 #include "componente.h"
 #include "memoria.h"
 
-#define NUM_COMPONENTES 10
+#define NUM_COMPONENTES 9
 #define MAX_STR_PRINT 50
 
 /*** VARIÁVEIS GLOBAIS ***/
 
 extern int qtd_busca_inst;
 extern int qtd_emissao;
-extern int qtd_portas_reg;
 
 extern int intervalo_mem_x;
 extern int intervalo_mem_y;

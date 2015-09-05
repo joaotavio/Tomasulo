@@ -9,7 +9,6 @@
 
 int qtd_busca_inst;
 int qtd_emissao;
-int qtd_portas_reg;
 
 int intervalo_mem_x;
 int intervalo_mem_y;
@@ -69,7 +68,7 @@ void printCiclo(){
 
     printf("\nCICLO: %d\n", cont_ciclos);
     printf("%-20s | %-20s | %-20s | %-20s | %-20s | %-20s |\n", "EMISSAO", "UNIDADE DE ENDERECO", "BUFFER LOAD/STORE", "ESTACAO DE RESERVA", "UNIDADE FUNCIONAL", "ESCRITA");
-    printf("---------------------|----------------------|----------------------|----------------------|---------------------------------------------|\n");
+    printf("---------------------|----------------------|----------------------|----------------------|----------------------|----------------------|\n");
     for (i = 0; i < num; ++i) {
         /* EMITIDAS */
         if (num_emitidas <= i)
@@ -117,7 +116,7 @@ void printCiclo(){
 
         printf("\n");        
     }
-    printf("---------------------|----------------------|----------------------|----------------------|---------------------------------------------|\n\n");
+   printf("---------------------|----------------------|----------------------|----------------------|----------------------|----------------------|\n\n");
 	printRegistrador();
 }
 
@@ -218,8 +217,6 @@ bool emissao(){
     int i, j, posicao, pos_anterior_somador = 0, pos_anterior_mult = 0;
     Instrucao inst;
     bool foiEmitida;
-    bool hist_destino[NUM_REGISTRADOR];
-    memset(hist_destino, false, sizeof(hist_destino));
 
     j = 0;
     for(i = 0; i < qtd_emissao && !janelaVazia(janela); i++){
@@ -250,14 +247,11 @@ bool emissao(){
                     else
                         pos_anterior_somador = posicao + 1; //tem pos UF
                     
-                    if (posicao > -1 && !hist_destino[inst.dest]){ //Se houver posicao e nao tiver dep.                       
+                    if (posicao > -1){ //Se houver posicao e nao tiver dep.                       
                         janelaRemove(j);
                         insereFilaRegistrador(registrador, inst.dest, posicao); //Insere na fila
                         estacaoInsere(&er_somador, inst.opcode, -1, -1, inst.op1, 0, posicao); //Insere na ER
                         foiEmitida = true; //Marca que foi emitida
-                    }
-                    else {
-                        hist_destino[inst.dest] = true; //?
                     }
                     break;
                 case BEQ:
@@ -286,14 +280,11 @@ bool emissao(){
                     else
                         pos_anterior_somador = posicao + 1;
 
-                    if (posicao > -1 && !hist_destino[inst.dest]){
+                    if (posicao > -1){
                         janelaRemove(j);
                         insereFilaRegistrador(registrador, inst.dest, posicao);
                         estacaoInsere(&er_somador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
                         foiEmitida = true;
-                    }
-                    else {
-                        hist_destino[inst.dest] = true;
                     }
                     break;
                 case ADDI:
@@ -304,14 +295,11 @@ bool emissao(){
                     else
                         pos_anterior_somador = posicao + 1;
 
-                    if (posicao > -1 && !hist_destino[inst.dest]){                        
+                    if (posicao > -1){                        
                         janelaRemove(j);
                         insereFilaRegistrador(registrador, inst.dest, posicao);
                         estacaoInsere(&er_somador, inst.opcode, inst.op1, -1, 0, inst.op2, posicao);
                         foiEmitida = true;
-                    }
-                    else {
-                        hist_destino[inst.dest] = true;
                     }
                     break;
                 case MULT:                    
@@ -322,14 +310,11 @@ bool emissao(){
                     else
                         pos_anterior_mult = posicao +1 ;
 
-                    if (posicao > -1 && !hist_destino[inst.dest]){
+                    if (posicao > -1){
                         janelaRemove(j);
                         insereFilaRegistrador(registrador, inst.dest, posicao);
                         estacaoInsere(&er_multiplicador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
                         foiEmitida = true;
-                    }
-                    else {
-                        hist_destino[inst.dest] = true;
                     }
                     break;
                 case MULTI:                    
@@ -340,14 +325,11 @@ bool emissao(){
                     else
                         pos_anterior_mult = posicao +1 ;
 
-                    if (posicao > -1 && !hist_destino[inst.dest]){
+                    if (posicao > -1){
                         janelaRemove(j);
                         insereFilaRegistrador(registrador, inst.dest, posicao);
                         estacaoInsere(&er_multiplicador, inst.opcode, inst.op1, -1, 0, inst.op2, posicao);
                         foiEmitida = true;
-                    }
-                    else {
-                        hist_destino[inst.dest] = true;
                     }
                     break;
                 default:
@@ -360,7 +342,7 @@ bool emissao(){
             inserePrintEmitidas(inst);
     }
 
-    return janela.tam > 0 || num_emitidas > 0; //return janela.tam==0
+    return janela.tam > 0 || num_emitidas > 0;
 }
 
 //VERIFICAR TODOS OS BUFFERS, UF, ER ETC

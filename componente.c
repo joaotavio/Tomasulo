@@ -315,18 +315,17 @@ void bufferRemove(ComponenteBuffer *buf, int posicao){
 
 char* bfToString(Buffer buffer){
 	char *str = malloc(sizeof(char)*MAX_STR_PRINT);
-    char strOpcode[10];
     switch(buffer.opcode){
         case LD:
-            strcpy(strOpcode, "ld");
+            sprintf(str, "ld [%d], %d", buffer.origem, buffer.destino);
             break;
         case SD:
-            strcpy(strOpcode, "SD");
+            sprintf(str, "sd %d, [%d]", buffer.origem, buffer.destino);
             break;
         default:
             break;
     }
-    sprintf(str, "%s %d, %d", strOpcode, buffer.origem, buffer.destino);    
+
     return str;
 }
 
@@ -351,18 +350,17 @@ bool uEnderecoCheia(){
 	
 char* ueToString(UnidadeEndereco ue){
 	char *str = malloc(sizeof(char)*MAX_STR_PRINT);
-    char strOpcode[10];
-	switch(ue.opcode){
-		case SD:
-			strcpy(strOpcode, "sd");
+    switch(ue.opcode){
+        case LD:
+            sprintf(str, "ld [%d], %d", ue.origem, ue.destino);
             break;
-		case LD:
-			strcpy(strOpcode, "ld");
+        case SD:
+            sprintf(str, "sd %d, [%d]", ue.origem, ue.destino);
             break;
-		default:
-			break;
-	}
-	sprintf(str, "%s %d, %d", strOpcode, ue.origem, ue.destino);
+        default:
+            break;
+    }
+
     return str;
 }
 

@@ -7,7 +7,6 @@ ARQUITETURA:
     buffer de escrita = 5
     emissao = 2
     memoria = 100
-    portas banco de registradores = 32
     imemoria = 0, 20
 
 CICLOS:
