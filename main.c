@@ -27,6 +27,7 @@ void iniciarComponentes(){
     inicializaBuffer(&load);
     inicializaBuffer(&store);
     inicializaRegistrador(registrador);
+    inicializaBarramento(&barramento, load.tamMax, store.tamMax, somador.tamMax, multiplicador.tamMax);
 }
 
 void iniciar(){
@@ -41,34 +42,11 @@ void iniciar(){
     }
     fclose(arquivo);
 
-    printMemoria();
-
-    printInstrucao(memoriaObterInst(0));
-    printInstrucao(memoriaObterInst(1));
-    printInstrucao(memoriaObterInst(2));
-    printInstrucao(memoriaObterInst(3));
-    printInstrucao(memoriaObterInst(4));
-    printInstrucao(memoriaObterInst(5));
-    printInstrucao(memoriaObterInst(6));
-    printInstrucao(memoriaObterInst(7));
-    printInstrucao(memoriaObterInst(8));
-    printInstrucao(memoriaObterInst(9));
-    printInstrucao(memoriaObterInst(10));
-    printInstrucao(memoriaObterInst(11));
-    printInstrucao(memoriaObterInst(12));
-    int dado = memoriaObterDado(0);
-    printf("\nDADO: %d\n", dado);
-    dado = memoriaObterDado(1);
-    printf("DADO: %d\n", dado);
-    dado = memoriaObterDado(2);
-    printf("DADO: %d\n\n", dado);
-
-
     iniciarComponentes();
-
     iniciarTomasulo();
-
     liberarComponentes();
+
+    printf("Execucao terminada...\n");
 }
 
 int main(int argc, char const *argv[]) {

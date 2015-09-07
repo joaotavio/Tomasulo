@@ -8,12 +8,16 @@
 #define MAX_RESERVA 100
 #define	NUM_REGISTRADOR 32
 
+typedef enum tipo_componente {LOAD, STORE, SOMADOR, MULTIPLICADOR} TipoComponente;
+
 typedef struct registrador {
 	int64_t valor;
 	int qi;
+	int id; 	//id da instrução que gera o valor
 } Registrador;
 
 typedef struct est_reserva{
+	int id;
 	Operacoes opcode;
 	int qj;
 	int qk;
@@ -30,6 +34,7 @@ typedef struct comp_est_reserva {
 } ComponenteER;
 
 typedef struct unidade_funcional {
+	int id;
 	Operacoes opcode;
 	int vj;
 	int vk;
@@ -63,6 +68,17 @@ typedef struct un_endereco{
 	bool busy;
 } UnidadeEndereco;
 
+typedef struct campo_barramento {
+	int64_t dado;
+	int id;
+} CampoBarramento;
+
+typedef struct cdb {
+	CampoBarramento *campo;
+	int tamMax;
+} CDB;
+
+
 extern Fila fila;
 extern Registrador registrador[NUM_REGISTRADOR];
 extern UnidadeEndereco unidadeEndereco;
@@ -72,13 +88,14 @@ extern ComponenteUF somador;
 extern ComponenteUF multiplicador;
 extern ComponenteBuffer load;
 extern ComponenteBuffer store;
+extern CDB barramento;
 
 /* FILA */
 void inicializaFila(int tamanho);
 
 /* ESTAÇÃO DE RESERVA */
 void inicializaER(ComponenteER *er, ComponenteUF *uf);
-void estacaoInsere(ComponenteER *er, Operacoes opcode, int qj, int qk, int vj, int vk, int posicao);
+void estacaoInsere(ComponenteER *er, int id, Operacoes opcode, int qj, int qk, int vj, int vk, int A, int posicao);
 void estacaoRemove(ComponenteER *er, int posicao);
 int procuraEstacao(ComponenteER er);
 bool estReservaCheia(ComponenteER er);
@@ -88,7 +105,7 @@ char* erToString(EstacaoReserva er);
 /* UNIDADE FUNCIONAL */
 bool unFuncionalCheia(ComponenteUF uf);
 int procuraUF(ComponenteUF uf, int posicao);
-void uFuncionalInsere(ComponenteUF *uf, int posicao, Operacoes opcode, int vj, int vk, int ciclos);
+void uFuncionalInsere(ComponenteUF *uf, int posicao, int id, Operacoes opcode, int vj, int vk, int ciclos);
 void uFuncionalRemove(ComponenteUF *uf, int posicao);
 char* ufToString(UnidadeFuncional uf);
 
@@ -109,5 +126,14 @@ char* ueToString(UnidadeEndereco ue);
 
 /* REGISTRADOR */
 void inicializaRegistrador(Registrador reg[]);
+void registradorMudaQI(Registrador reg[], int posicao, int id, int estacao, TipoComponente tipo);
+int registradorObterQI(Registrador reg[], int posicao);
+void registradorEscreve(Registrador reg[], int posicao, int64_t valor);
+int procuraRegistrador(Registrador reg[], int estacao, TipoComponente tipo);
+
+/* BARRAMENTO */
+void inicializaBarramento(CDB *barramento, int tam_load, int tam_store, int tam_somador, int tam_mult);
+void barramentoInsere(CDB *barramento, int64_t dado, int id, int posicao, TipoComponente tipo);
+void barramentoLimpar(CDB *barramento);
 
 #endif

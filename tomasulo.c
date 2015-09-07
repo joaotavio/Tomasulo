@@ -35,11 +35,16 @@ int ciclo_li;
 int ciclo_lui;
 
 int cont_ciclos;
+int id;
+
+/* REGISTRADORES ESPECÍFICOS */
 int pc;
+bool flag_jmp;
+bool flag_memoria_busy;
 
 /* VARIÁVEIS PARA PRINT */
 
-Instrucao *print_emitidas; //TALVEZ PODE USAR ISSO PRA DEPENDENCIA
+Instrucao *print_emitidas;
 int num_emitidas;
 char **print_er;
 int num_print_er;
@@ -49,13 +54,15 @@ char *print_ue;
 int num_print_ue;
 char **print_bf;
 int num_print_bf;
+char **print_esc;
+int num_print_esc;
 
 /* FUNÇÕES PARA PRINT */
 void printRegistrador(){
-	int i;
+    int i;
     printf("REGISTRADORES: \n");
-	for(i = 0; i < NUM_REGISTRADOR/2; i++){
-		printf("R%d = %"PRId64" | ", i, registrador[i].valor);
+    for(i = 0; i < NUM_REGISTRADOR/2; i++){
+        printf("R%d = %"PRId64" | ", i, registrador[i].valor);
     }
     printf("\n");
     for(i = NUM_REGISTRADOR/2; i < NUM_REGISTRADOR; i++){
@@ -69,7 +76,7 @@ void printRegistrador(){
 void printCiclo(){
     int i, num;
     char str[MAX_STR_PRINT];
-    num = MAX(num_emitidas, MAX(num_print_er, num_print_uf));
+    num = MAX(num_emitidas, MAX(num_print_er, MAX(num_print_uf, MAX(num_print_bf, MAX(num_print_ue, num_print_esc)))));
 
     printf("\nCICLO: %d\n", cont_ciclos);
     printf("%-20s | %-20s | %-20s | %-20s | %-20s | %-20s |\n", "EMISSAO", "UNIDADE DE ENDERECO", "BUFFER LOAD/STORE", "ESTACAO DE RESERVA", "UNIDADE FUNCIONAL", "ESCRITA");
@@ -84,18 +91,18 @@ void printCiclo(){
 
         /* UNIDADE DE ENDEREÇO */
         if (num_print_ue <= i)
-            strcpy(str, "---");		
+            strcpy(str, "---");     
         else
             strcpy(str, print_ue);
         printf("%-20s | ", str);
 
-		/* BUFFER LOAD/STORE*/
-		if (num_print_bf <= i)
-			strcpy(str, "---");
-		else
-			strcpy(str, print_bf[i]);
-		printf("%-20s | ", str);
-			
+        /* BUFFER LOAD/STORE*/
+        if (num_print_bf <= i)
+            strcpy(str, "---");
+        else
+            strcpy(str, print_bf[i]);
+        printf("%-20s | ", str);
+            
         /* ESTAÇÃO DE RESERVA */
         if (num_print_er <= i)
             strcpy(str, "---");
@@ -112,17 +119,17 @@ void printCiclo(){
 
 
         /* ESCRITA */
-        //if (num_emitidas <= i)
+        if (num_print_esc <= i)
             strcpy(str, "---");
-        //else
-            //str = instToString(print_emitidas[i]);
+        else
+            strcpy(str, print_esc[i]);
         printf("%-20s | ", str);
 
 
         printf("\n");        
     }
-   printf("---------------------|----------------------|----------------------|----------------------|----------------------|----------------------|\n\n");
-	printRegistrador();
+    printf("---------------------|----------------------|----------------------|----------------------|----------------------|----------------------|\n\n");
+    printRegistrador();
 }
 
 void criaVetorPrint(){
@@ -130,15 +137,17 @@ void criaVetorPrint(){
     print_er = (char**)calloc(er_somador.tam + er_multiplicador.tam, sizeof(char)*MAX_STR_PRINT);
     print_uf = (char**)calloc(somador.tam + multiplicador.tam, sizeof(char)*MAX_STR_PRINT);
     print_bf = (char**)calloc(load.tam + store.tam, sizeof(char)*MAX_STR_PRINT);
-	print_ue = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
+    print_esc = (char**)calloc(load.tam + store.tam + somador.tam + multiplicador.tam, sizeof(char)*MAX_STR_PRINT);
+    print_ue = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
 }
 
 void inicializaPrint(){
     num_emitidas = 0;
     num_print_er = 0;
     num_print_uf = 0;
-	num_print_ue = 0;
-	num_print_bf = 0;
+    num_print_ue = 0;
+    num_print_bf = 0;
+    num_print_esc = 0;
 }
 
 void inserePrintEmitidas(Instrucao inst){
@@ -163,18 +172,24 @@ void inserePrintUF(UnidadeFuncional uf, int posicao, char nome[]){
 }
 
 void inserePrintBF(Buffer buffer, int posicao, char nome[]){
-	print_bf[num_print_bf] = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
-	char *str = bfToString(buffer);
-	sprintf(print_bf[num_print_bf], "%s(%s%d)", str, nome, posicao);
-	free(str);
-	num_print_bf++;
+    print_bf[num_print_bf] = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
+    char *str = bfToString(buffer);
+    sprintf(print_bf[num_print_bf], "%s(%s%d)", str, nome, posicao);
+    free(str);
+    num_print_bf++;
 }
 
-void inserePrintUE(UnidadeEndereco ue){	
-	char *str = ueToString(ue);
-	sprintf(print_ue, "%s", str);
-	free(str);
-	num_print_ue++;
+void inserePrintESC(int posicao, int valor, char str[]){
+    print_esc[num_print_esc] = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
+    sprintf(print_esc[num_print_esc], "%s%d <- %d", str, posicao, valor);
+    num_print_esc++;
+}
+
+void inserePrintUE(UnidadeEndereco ue){ 
+    char *str = ueToString(ue);
+    sprintf(print_ue, "%s", str);
+    free(str);
+    num_print_ue++;
 }
 
 /* TOMASULO */ 
@@ -184,8 +199,8 @@ bool busca(){
     Instrucao inst;
     int i;
     for (i = 0; i < qtd_busca_inst && !filaEstaCheia(fila); i++){
-        inst = memoriaObterInst(pc); 	//busca a proxima inst
-        inst.id = pc;					//id para dependencias
+        inst = memoriaObterInst(pc);    //busca a proxima inst
+        inst.id = id++;                 //id para dependencias
         switch (inst.opcode){
             case EXIT:
                 return !filaEstaVazia(fila);
@@ -215,32 +230,50 @@ bool busca(){
     return !filaEstaVazia(fila);
 }
 
+void verificaQI(int reg, int *q, int *v){
+    if (registrador[reg].qi == -1){
+        *v = registrador[reg].valor;
+        *q = -1;
+    }
+    else {        
+        *q = registrador[reg].qi;
+        *v = registrador[reg].id;
+    }
+}
+
+//QUANDO FOR JUMP EMITIR NOP
 //retornar numero de emitidas, se for -1 nao emitiu nada(false)
 bool emissao(){
     int i, posicao, pos_anterior_somador = 0, pos_anterior_mult = 0;
+    int qj, qk, vj, vk, A;
     Instrucao inst;
     bool foiEmitida;
 
     for(i = 0; i < qtd_emissao && !filaEstaVazia(fila); i++){
+        qj = -1;
+        qk = -1;
+        vj = 0;
+        vk = 0;
+        A = 0;
         foiEmitida = false;
         inst = filaPrimeiro(fila);
         switch (inst.opcode){
             case LD:
                 if(!uEnderecoCheia()){
-					filaRemove(fila, &inst);						
-					uEnderecoInsere(&unidadeEndereco, inst.opcode, inst.op1, inst.dest);
-					foiEmitida = true;
-				}
+                    filaRemove(fila, &inst);                        
+                    uEnderecoInsere(&unidadeEndereco, inst.opcode, inst.op1, inst.dest);
+                    foiEmitida = true;
+                }
                 break;
             case SD:                    
                 if(!uEnderecoCheia()){
-					filaRemove(fila, &inst);
-					uEnderecoInsere(&unidadeEndereco, inst.opcode, inst.op1, inst.dest);
-					foiEmitida = true;
-				}
-				break;
+                    filaRemove(fila, &inst);
+                    uEnderecoInsere(&unidadeEndereco, inst.opcode, inst.op1, inst.dest);
+                    foiEmitida = true;
+                }
+                break;
             case LI:
-                    posicao = procuraUF(somador, pos_anterior_somador);
+                posicao = procuraUF(somador, pos_anterior_somador);
 
                 if (posicao == -1) //UF cheia
                     posicao = procuraEstacao(er_somador); //procura ER livre
@@ -248,8 +281,10 @@ bool emissao(){
                     pos_anterior_somador = posicao + 1; //tem pos UF
                 
                 if (posicao > -1 && !er_somador.est_reserva[posicao].busy){ //Se houver posicao e nao tiver dep.                       
-                    filaRemove(fila, &inst);                        
-                    estacaoInsere(&er_somador, inst.opcode, -1, -1, inst.op1, 0, posicao); //Insere na ER
+                    filaRemove(fila, &inst);
+                    vj = inst.op1;
+                    estacaoInsere(&er_somador, inst.id, inst.opcode, qj, qk, vj, vk, A, posicao); //Insere na ER
+                    registradorMudaQI(registrador, inst.dest, inst.id, posicao, SOMADOR);
                     foiEmitida = true; //Marca que foi emitida
                 }
                 break;
@@ -267,7 +302,10 @@ bool emissao(){
                 
                 if (posicao > -1 && !er_somador.est_reserva[posicao].busy){
                     filaRemove(fila, &inst);
-                    estacaoInsere(&er_somador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
+                    verificaQI(inst.op1, &qj, &vj);
+                    verificaQI(inst.op2, &qk, &vk);
+                    A = inst.dest;
+                    estacaoInsere(&er_somador, inst.id, inst.opcode, qj, qk, vj, vk, A, posicao);
                     foiEmitida = true;
                 }
                 break;
@@ -280,8 +318,11 @@ bool emissao(){
                     pos_anterior_somador = posicao + 1;
 
                 if (posicao > -1 && !er_somador.est_reserva[posicao].busy){
-                    filaRemove(fila, &inst);                        
-                    estacaoInsere(&er_somador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
+                    filaRemove(fila, &inst);
+                    verificaQI(inst.op1, &qj, &vj);
+                    verificaQI(inst.op2, &qk, &vk);
+                    estacaoInsere(&er_somador, inst.id, inst.opcode, qj, qk, vj, vk, A, posicao);
+                    registradorMudaQI(registrador, inst.dest, inst.id, posicao, SOMADOR);
                     foiEmitida = true;
                 }
                 break;
@@ -294,8 +335,11 @@ bool emissao(){
                     pos_anterior_somador = posicao + 1;
 
                 if (posicao > -1 && !er_somador.est_reserva[posicao].busy){                        
-                    filaRemove(fila, &inst);                        
-                    estacaoInsere(&er_somador, inst.opcode, inst.op1, -1, 0, inst.op2, posicao);
+                    filaRemove(fila, &inst);
+                    verificaQI(inst.op1, &qj, &vj);
+                    vk = inst.op2;
+                    estacaoInsere(&er_somador, inst.id, inst.opcode, qj, qk, vj, vk, A, posicao);
+                    registradorMudaQI(registrador, inst.dest, inst.id, posicao, SOMADOR);
                     foiEmitida = true;
                 }
                 break;
@@ -305,11 +349,14 @@ bool emissao(){
                 if (posicao == -1)
                     posicao = procuraEstacao(er_multiplicador);
                 else
-                    pos_anterior_mult = posicao +1 ;
+                    pos_anterior_mult = posicao + 1;
 
                 if (posicao > -1 && !er_multiplicador.est_reserva[posicao].busy){
-                    filaRemove(fila, &inst);                        
-                    estacaoInsere(&er_multiplicador, inst.opcode, inst.op1, inst.op2, 0, 0, posicao);
+                    filaRemove(fila, &inst);
+                    verificaQI(inst.op1, &qj, &vj);
+                    verificaQI(inst.op2, &qk, &vk);
+                    estacaoInsere(&er_multiplicador, inst.id, inst.opcode, qj, qk, vj, vk, A, posicao);
+                    registradorMudaQI(registrador, inst.dest, inst.id, posicao, MULTIPLICADOR);
                     foiEmitida = true;
                 }
                 break;
@@ -319,11 +366,14 @@ bool emissao(){
                 if (posicao == -1)
                     posicao = procuraEstacao(er_multiplicador);
                 else
-                    pos_anterior_mult = posicao +1 ;
+                    pos_anterior_mult = posicao + 1;
 
                 if (posicao > -1 && !er_multiplicador.est_reserva[posicao].busy){
                     filaRemove(fila, &inst);
-                    estacaoInsere(&er_multiplicador, inst.opcode, inst.op1, -1, 0, inst.op2, posicao);
+                    verificaQI(inst.op1, &qj, &vj);
+                    vk = inst.op2;
+                    estacaoInsere(&er_multiplicador, inst.id, inst.opcode, qj, qk, vj, vk, A, posicao);
+                    registradorMudaQI(registrador, inst.dest, inst.id, posicao, MULTIPLICADOR);
                     foiEmitida = true;
                 }
                 break;
@@ -337,18 +387,57 @@ bool emissao(){
     return fila->tam > 0 || num_emitidas > 0;
 }
 
-//VERIFICAR TODOS OS BUFFERS, UF, ER ETC
+bool escrita(){
+    int i;
+    bool flag = false;
+    for (i = 0; i < barramento.tamMax; ++i){
+        if (barramento.campo[i].id != -1){
+
+            flag = true;
+        }
+    }
+    return false;
+}
+
+void escreve(int64_t valor, int id, int estacao, TipoComponente tipo, char str[]){
+    barramentoInsere(&barramento, valor, id, estacao, tipo);
+    int reg = procuraRegistrador(registrador, estacao, tipo);
+    if (reg == -1){
+        inserePrintESC(estacao, valor, str);
+    }
+    else {
+        inserePrintESC(reg, valor, "R");
+        registradorEscreve(registrador, reg, valor);
+    }
+}
+
+void verificaBarramento(EstacaoReserva *er, TipoComponente tipo){
+    if (er->qj != -1){
+        if (er->vj == barramento.campo[er->qj].id){
+            er->vj = barramento.campo[er->qj].dado;
+            er->qj = -1;
+        }
+    }
+    if (er->qk != -1){
+        if (er->vk == barramento.campo[er->qk].id){
+            er->vk = barramento.campo[er->qk].dado;
+            er->qk = -1;
+        }
+    }
+}
+
 bool pulso(){
     int i;
-	int posicao;
+    int posicao;
     
-	/* EXECUÇÃO SOMADOR */
+    /* EXECUÇÃO SOMADOR */
+    int vj, vk;
     for (i = 0; i < somador.tamMax; ++i) {
         if (somador.un_funcional[i].busy){
             if (somador.un_funcional[i].ciclos == 0){ //quando chegar no ciclo 0, realiza a operacao
+                vj = somador.un_funcional[i].vj;
+                vk = somador.un_funcional[i].vk;
                 switch (somador.un_funcional[i].opcode){
-                    case LI: 
-                        break;
                     case BEQ:
                         break;
                     case BNE:
@@ -361,40 +450,41 @@ bool pulso(){
                         break;
                     case BLE:
                         break;
+                    case LI:
                     case ADD:
-                        break;
                     case ADDI:
+                        escreve(vj + vk, somador.un_funcional[i].id, i, SOMADOR, "ES");
                         break;
                     case SUB:
-                        break;
                     case SUBI:
+                        escreve(vj - vk, somador.un_funcional[i].id, i, SOMADOR, "ES");
                         break;
                     default:
                         break;
                 }
-                //chamar função escreve() //chamar para escrever
                 uFuncionalRemove(&somador, i); 
             }            
         }
     }
 
-	/* EXECUCAO MULTIPLICADOR */
+    /* EXECUCAO MULTIPLICADOR */
     for (i = 0; i < multiplicador.tamMax; ++i) {
         if (multiplicador.un_funcional[i].busy){
             if (multiplicador.un_funcional[i].ciclos == 0){
+                vj = multiplicador.un_funcional[i].vj;
+                vk = multiplicador.un_funcional[i].vk;
                 switch (multiplicador.un_funcional[i].opcode){
                     case MULT: 
-                        break;
                     case MULTI:
+                        escreve(vj * vk, multiplicador.un_funcional[i].id, i, MULTIPLICADOR, "EM");
                         break;
                     case DIV:
-                        break;
                     case DIVI:
+                        escreve(vj / vk, multiplicador.un_funcional[i].id, i, MULTIPLICADOR, "EM");
                         break;
                     default:
                         break;
                 }
-                //chamar função escreve()
                 uFuncionalRemove(&multiplicador, i);
             }            
         }
@@ -403,44 +493,44 @@ bool pulso(){
     /* Verifica ER Somador */
     for (i = 0; i < er_somador.tamMax; ++i) {
         if (er_somador.est_reserva[i].busy){
-            //inserePrintER(er_somador.est_reserva[i], i, "ES");
-            if (!somador.un_funcional[i].busy){
+            verificaBarramento(&er_somador.est_reserva[i], SOMADOR);
+            if (!somador.un_funcional[i].busy && er_somador.est_reserva[i].qj == -1 && er_somador.est_reserva[i].qk == -1){                
                 switch (er_somador.est_reserva[i].opcode){
-                    case LI:
-                        uFuncionalInsere(&somador, i, LI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_li);
-                        break;
-                    case BEQ:
-                        uFuncionalInsere(&somador, i, BEQ, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_beq);
-                        break;
-                    case BNE:
-                        uFuncionalInsere(&somador, i, BNE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bne);
-                        break;
-                    case BG:
-                        uFuncionalInsere(&somador, i, BG, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bg);
-                        break;
-                    case BGE:
-                        uFuncionalInsere(&somador, i, BGE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bge);
-                        break;
-                    case BL:
-                        uFuncionalInsere(&somador, i, BL, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bl);
-                        break;
-                    case BLE:
-                        uFuncionalInsere(&somador, i, BLE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_ble);
-                        break;
-                    case ADD:
-                        uFuncionalInsere(&somador, i, ADD, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_add);
-                        break;
-                    case ADDI:
-                        uFuncionalInsere(&somador, i, ADDI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_addi);
-                        break;
-                    case SUB:
-                        uFuncionalInsere(&somador, i, SUB, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_sub);
-                        break;
-                    case SUBI:
-                        uFuncionalInsere(&somador, i, SUBI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_subi);
-                        break;
-                    default:
-                        break;
+                     case LI:
+                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, LI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_li);
+                         break;
+                     case BEQ:
+                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BEQ, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_beq);
+                         break;
+                     case BNE:
+                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BNE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bne);
+                         break;
+                     case BG:
+                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BG, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bg);
+                         break;
+                     case BGE:
+                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BGE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bge);
+                         break;
+                     case BL:
+                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BL, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bl);
+                         break;
+                     case BLE:
+                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BLE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_ble);
+                         break;
+                     case ADD:
+                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, ADD, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_add);
+                         break;
+                     case ADDI:
+                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, ADDI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_addi);
+                         break;
+                     case SUB:
+                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, SUB, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_sub);
+                         break;
+                     case SUBI:
+                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, SUBI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_subi);
+                         break;
+                     default:
+                         break;
                 }
                 estacaoRemove(&er_somador, i);
             }
@@ -453,20 +543,20 @@ bool pulso(){
     /* Verifica ER Mutiplicador */
     for (i = 0; i < er_multiplicador.tamMax; ++i) {
         if (er_multiplicador.est_reserva[i].busy){
-            //inserePrintER(er_multiplicador.est_reserva[i], i, "EM");
-            if (!multiplicador.un_funcional[i].busy){
+            verificaBarramento(&er_multiplicador.est_reserva[i], MULTIPLICADOR);
+            if (!multiplicador.un_funcional[i].busy && er_multiplicador.est_reserva[i].qj == -1 && er_multiplicador.est_reserva[i].qk == -1){
                 switch (er_multiplicador.est_reserva[i].opcode){
                     case MULT:
-                        uFuncionalInsere(&multiplicador, i, MULT, er_multiplicador.est_reserva[i].vj, er_multiplicador.est_reserva[i].vk, ciclo_mult);                        
+                        uFuncionalInsere(&multiplicador, i, er_multiplicador.est_reserva[i].id, MULT, er_multiplicador.est_reserva[i].vj, er_multiplicador.est_reserva[i].vk, ciclo_mult);
                         break;
                     case MULTI:
-                        uFuncionalInsere(&multiplicador, i, MULTI, er_multiplicador.est_reserva[i].vj, er_multiplicador.est_reserva[i].vk, ciclo_multi);
+                        uFuncionalInsere(&multiplicador, i, er_multiplicador.est_reserva[i].id, MULTI, er_multiplicador.est_reserva[i].vj, er_multiplicador.est_reserva[i].vk, ciclo_multi);
                         break;
                     case DIV:
-                        uFuncionalInsere(&multiplicador, i, DIV, er_multiplicador.est_reserva[i].vj, er_multiplicador.est_reserva[i].vk, ciclo_div);
+                        uFuncionalInsere(&multiplicador, i, er_multiplicador.est_reserva[i].id, DIV, er_multiplicador.est_reserva[i].vj, er_multiplicador.est_reserva[i].vk, ciclo_div);
                         break;
                     case DIVI:
-                        uFuncionalInsere(&multiplicador, i, DIVI, er_multiplicador.est_reserva[i].vj, er_multiplicador.est_reserva[i].vk, ciclo_divi);
+                        uFuncionalInsere(&multiplicador, i, er_multiplicador.est_reserva[i].id, DIVI, er_multiplicador.est_reserva[i].vj, er_multiplicador.est_reserva[i].vk, ciclo_divi);
                         break;
                     default:
                         break;
@@ -479,59 +569,59 @@ bool pulso(){
         }
     }
 
-	
-	
-	/*ATUALIZA LOAD/STORE */
-	for (i = 0; i < load.tamMax; ++i) {
-		if(load.buffer[i].busy){
-			//if(!memoria.busy){
-				//memoriaInsere();
-				bufferRemove(&load, i);	
-				//printf("\nOrigem: %d\n", load.buffer[i].origem);
-				//printf("\nDestino: %d\n", load.buffer[i].destino);
-			//} else {
-				//inserePrintBF(load.buffer[i], i, "BL");
-			//}
-		}
-	}
-	
-	for (i = 0; i < store.tamMax; ++i) {
-		if(store.buffer[i].busy){
-			//if(!memoria.busy){
-				//memoriaInsere();
-				bufferRemove(&store, i);
-				//printf("\nOrigem: %d\n", store.buffer[i].origem);
-				//printf("\nDestino: %d\n", store.buffer[i].destino);				
-			//} else {
-				//inserePrintBF(load.buffer[i], i, "BS");
-			//}
-		}
-	}
-	
-	/* ATUALIZA UN. ENDERECO */
-	if(unidadeEndereco.busy){
-		inserePrintUE(unidadeEndereco);
-		switch(unidadeEndereco.opcode){
-			case LD:
-				posicao = procuraBuffer(load);
-				if(posicao > -1){
-					bufferInsere(&load, unidadeEndereco.opcode, unidadeEndereco.origem, unidadeEndereco.destino);
-					uEnderecoRemove(&unidadeEndereco);
-				}
-				break;
-			case SD:
-				posicao = procuraBuffer(store);
-				if(posicao > -1){
-					bufferInsere(&load, unidadeEndereco.opcode, unidadeEndereco.origem, unidadeEndereco.destino);
-					uEnderecoRemove(&unidadeEndereco);
-				}
-				break;
-			default:
-				break;
-		}
-	}
-	
-	
+    
+    
+    /*ATUALIZA LOAD/STORE */
+    for (i = 0; i < load.tamMax; ++i) {
+        if(load.buffer[i].busy){
+            //if(!memoria.busy){
+                //memoriaInsere();
+                bufferRemove(&load, i); 
+                //printf("\nOrigem: %d\n", load.buffer[i].origem);
+                //printf("\nDestino: %d\n", load.buffer[i].destino);
+            //} else {
+                //inserePrintBF(load.buffer[i], i, "BL");
+            //}
+        }
+    }
+    
+    for (i = 0; i < store.tamMax; ++i) {
+        if(store.buffer[i].busy){
+            //if(!memoria.busy){
+                //memoriaInsere();
+                bufferRemove(&store, i);
+                //printf("\nOrigem: %d\n", store.buffer[i].origem);
+                //printf("\nDestino: %d\n", store.buffer[i].destino);               
+            //} else {
+                //inserePrintBF(load.buffer[i], i, "BS");
+            //}
+        }
+    }
+    
+    /* ATUALIZA UN. ENDERECO */
+    if(unidadeEndereco.busy){
+        inserePrintUE(unidadeEndereco);
+        switch(unidadeEndereco.opcode){
+            case LD:
+                posicao = procuraBuffer(load);
+                if(posicao > -1){
+                    bufferInsere(&load, unidadeEndereco.opcode, unidadeEndereco.origem, unidadeEndereco.destino);
+                    uEnderecoRemove(&unidadeEndereco);
+                }
+                break;
+            case SD:
+                posicao = procuraBuffer(store);
+                if(posicao > -1){
+                    bufferInsere(&load, unidadeEndereco.opcode, unidadeEndereco.origem, unidadeEndereco.destino);
+                    uEnderecoRemove(&unidadeEndereco);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    
+    
     /* ATUALIZA SOMADOR */
     for (i = 0; i < somador.tamMax; ++i) {
         if (somador.un_funcional[i].busy){            
@@ -551,33 +641,43 @@ bool pulso(){
     return er_somador.tam > 0 || somador.tam > 0 || er_multiplicador.tam > 0 || multiplicador.tam > 0;;
 }
 
+
+bool execucao(){
+    return false;
+}
+
 void iniciarTomasulo(){
     pc = 0;
     cont_ciclos = 0;
-    bool flag_busca, flag_emissao, flag_pulso;
+    id = 0;
+    bool flag_busca, flag_emissao, flag_pulso, flag_exec, flag_esc;
     criaVetorPrint();
 
-    //loop principal
     while (true) {
         inicializaPrint();
+        
         flag_pulso = pulso();
+        flag_esc = escrita();
+        flag_exec = execucao();
         flag_emissao = emissao();
         flag_busca = busca();
 
-        if (!flag_busca && !flag_emissao && !flag_pulso)
+        if (!flag_busca && !flag_emissao && !flag_pulso && !flag_exec && !flag_esc)
             break;
+
         cont_ciclos++;
         printCiclo();
+        barramentoLimpar(&barramento);
     }
-	/*int i;
+    /*int i;
     printf("----------------------------------------------------------\n");
-	for(i = 0; i < somador.tamMax; i++){
-		printf("Opcode %d\n", er_somador.est_reserva[i].opcode);
-		printf("QJ: %d\n", er_somador.est_reserva[i].qj);
-		printf("QK: %d\n", er_somador.est_reserva[i].qk);
-		printf("Busy: %d\n\n", er_somador.est_reserva[i].busy);
+    for(i = 0; i < somador.tamMax; i++){
+        printf("Opcode %d\n", er_somador.est_reserva[i].opcode);
+        printf("QJ: %d\n", er_somador.est_reserva[i].qj);
+        printf("QK: %d\n", er_somador.est_reserva[i].qk);
+        printf("Busy: %d\n\n", er_somador.est_reserva[i].busy);
         printf("TAM: %d\n", er_somador.tam);
-	}
+    }
     printf("\n\nSOMADOR\n");
     for(i = 0; i < somador.tamMax; i++){
         printf("Opcode %d\n", somador.un_funcional[i].opcode);

@@ -13,7 +13,6 @@ typedef int16_t imediato_t;
 typedef int32_t inst_t;
 typedef enum operacoes {LD, SD, LI, BEQ, BNE, BG, BGE, BL, BLE, JUMP, EXIT, ADD, ADDI, SUB, SUBI, MULT, MULTI, DIV, DIVI, NOP} Operacoes;
 
-
 typedef struct instrucao {
     //guardar id da instrucao para quando tiver dependencia verdadeira
     int id;

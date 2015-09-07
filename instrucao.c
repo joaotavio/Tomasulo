@@ -157,22 +157,22 @@ char* instToString(Instrucao inst){
             sprintf(str, "%d sd %d, R%d", inst.id, inst.dest, inst.op1);
             break;
         case BEQ:
-            sprintf(str, "%d beq R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d beq R%d, R%d, %d", inst.id, inst.op1, inst.op2, inst.dest);
             break;
         case BNE:
-            sprintf(str, "%d bne R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d bne R%d, R%d, %d", inst.id, inst.op1, inst.op2, inst.dest);
             break;
         case BG:
-            sprintf(str, "%d bg R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d bg R%d, R%d, %d", inst.id, inst.op1, inst.op2, inst.dest);
             break;
         case BGE:
-            sprintf(str, "%d bge R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d bge R%d, R%d, %d", inst.id, inst.op1, inst.op2, inst.dest);
             break;
         case BL:
-            sprintf(str, "%d bl R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d bl R%d, R%d, %d", inst.id, inst.op1, inst.op2, inst.dest);
             break;
         case BLE:
-            sprintf(str, "%d ble R%d, R%d, %d", inst.id, inst.dest, inst.op1, inst.op2);
+            sprintf(str, "%d ble R%d, R%d, %d", inst.id, inst.op1, inst.op2, inst.dest);
             break;
         case JUMP:
             sprintf(str, "jump %d", inst.dest);

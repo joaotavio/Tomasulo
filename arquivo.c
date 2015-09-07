@@ -41,8 +41,7 @@ bool decodificaComponente(FILE* arquivo, char str[], int valor){ //MUDAR NOME
         intervalo_mem_x = valor;
         if (fscanf(arquivo, " ,%d", &valor) != 1)
             return false;
-        intervalo_mem_y = valor;
-        printf("  imemoria -- %d, %d\n", intervalo_mem_x, intervalo_mem_y);
+        intervalo_mem_y = valor;        
     }
     else {
         return false;
@@ -61,8 +60,6 @@ bool lerCabecalhoArquitetura(FILE* arquivo){
     strMinuscula(buffer);
     if (strcmp(buffer, "arquitetura:") != 0)
         return false;
-    
-    printf("%s\n", buffer);
 
     int i;
     for (i = 0; i < NUM_COMPONENTES; ++i) {
@@ -76,8 +73,6 @@ bool lerCabecalhoArquitetura(FILE* arquivo){
 
         if (!decodificaComponente(arquivo, buffer, valor))
             return false;
-
-        printf("  %s --- %d\n", buffer, valor);
     }
 
     return true;
@@ -153,8 +148,6 @@ bool lerCabecalhoCiclos(FILE* arquivo){
     strMinuscula(buffer);
     if (strcmp(buffer, "ciclos:") != 0)
         return false;
-    
-    printf("\n%s\n", buffer);
 
     int i;
     //NUM_OPERACOES - 3 POR CAUSA DA OPERACAO NOP, jump e exit
@@ -169,7 +162,6 @@ bool lerCabecalhoCiclos(FILE* arquivo){
 
         if (!decodificaCiclo(buffer, valor))
             return false;
-        printf("  %s --- %d\n", buffer, valor);
     }
 
     return true;
@@ -412,8 +404,6 @@ bool lerInstrucoes(FILE* arquivo){
     strMinuscula(buffer);
     if (strcmp(buffer, "texto:") != 0)
         return false;
-    
-    printf("\n%s\n", buffer);
 
     int i = 0;
     while (!feof(arquivo)){
@@ -429,8 +419,6 @@ bool lerInstrucoes(FILE* arquivo){
             return false;
         
         memoriaInsereInst(inst, i);
-
-        printInstrucao(inst);
         i++;
     }
 
@@ -441,14 +429,13 @@ bool lerDados(FILE* arquivo){
     int num;
     int num_scanf;
     int i = 0;
-    printf("\nDados:\n");
+
     while (!feof(arquivo)){
         num_scanf = fscanf(arquivo, " %d", &num);
         if (num_scanf < 0)
             return true;
         if (num_scanf != 1)
             return false;
-        printf("NUM: %d\n", num);
         memoriaInsereDado(num, i);
         i++;
     }

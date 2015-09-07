@@ -13,6 +13,7 @@ ComponenteUF somador;
 ComponenteUF multiplicador;
 ComponenteBuffer load;
 ComponenteBuffer store;
+CDB barramento;
 
 
 /* FILA */
@@ -33,25 +34,27 @@ bool estReservaCheia(ComponenteER er){
     return er.tam == er.tamMax;
 }
 
-void estacaoInsere(ComponenteER *er, Operacoes opcode, int qj, int qk, int vj, int vk, int posicao){
+void estacaoInsere(ComponenteER *er, int id, Operacoes opcode, int qj, int qk, int vj, int vk, int A, int posicao){
+    er->est_reserva[posicao].id = id;
 	er->est_reserva[posicao].opcode = opcode;
 	er->est_reserva[posicao].qj = qj;
 	er->est_reserva[posicao].qk = qk;
     er->est_reserva[posicao].vj = vj;
     er->est_reserva[posicao].vk = vk;
     er->est_reserva[posicao].busy = true;
-    er->est_reserva[posicao].A = 0;
+    er->est_reserva[posicao].A = A;
     er->tam++;
 }
 
 void estacaoRemove(ComponenteER *er, int posicao){
+    er->est_reserva[posicao].id = -1;
     er->est_reserva[posicao].opcode = NOP;
-    er->est_reserva[posicao].qj = 0;
-    er->est_reserva[posicao].qk = 0;
+    er->est_reserva[posicao].qj = -1;
+    er->est_reserva[posicao].qk = -1;
     er->est_reserva[posicao].busy = false;
     er->est_reserva[posicao].vj = 0;
     er->est_reserva[posicao].vk = 0;
-    er->est_reserva[posicao].A = 0;
+    er->est_reserva[posicao].A = -1;
     er->tam--;
 }
 
@@ -130,20 +133,13 @@ char* erToString(EstacaoReserva er){
     return str;
 }
 
-/*void mostraEstacao(ComponenteBuffer *er, int tamanho){
-    int i;
-    for(i = 0; i < tamanho; i++){
-        printf("Vk: %d\n", er[0].vk);
-    }
-}*/
-
-
 /* UNIDADE FUNCIONAL */
 bool unFuncionalCheia(ComponenteUF uf){
     return uf.tam == uf.tamMax;
 }
 
-void uFuncionalInsere(ComponenteUF *uf, int posicao, Operacoes opcode, int vj, int vk, int ciclos){
+void uFuncionalInsere(ComponenteUF *uf, int posicao, int id, Operacoes opcode, int vj, int vk, int ciclos){
+    uf->un_funcional[posicao].id = id;
     uf->un_funcional[posicao].opcode = opcode;
     uf->un_funcional[posicao].vj = vj;
     uf->un_funcional[posicao].vk = vk;
@@ -153,6 +149,7 @@ void uFuncionalInsere(ComponenteUF *uf, int posicao, Operacoes opcode, int vj, i
 }
 
 void uFuncionalRemove(ComponenteUF *uf, int posicao){
+    uf->un_funcional[posicao].id = -1;
     uf->un_funcional[posicao].opcode = NOP;
     uf->un_funcional[posicao].busy = false;
     uf->un_funcional[posicao].vj = 0;
@@ -334,4 +331,91 @@ void inicializaRegistrador(Registrador reg[]){
     for(i = 0; i < NUM_REGISTRADOR; i++){
         reg[i].qi = -1;
     }
+}
+
+int codificaEstacao(int posicao, TipoComponente tipo){
+    int ret;
+    switch (tipo){
+        case LOAD:
+            ret = posicao;
+            break;
+        case STORE:
+            ret = posicao + load.tamMax;
+            break;
+        case SOMADOR:
+            ret = posicao + load.tamMax + store.tamMax;
+            break;
+        case MULTIPLICADOR:
+            ret = posicao + load.tamMax + store.tamMax + somador.tamMax;
+            break;
+    }
+    return ret;
+}
+
+int decodificaEstacao(int posicao){
+    int ret;
+    if (posicao < store.tamMax)
+        ret = posicao;
+    else if (posicao < somador.tamMax)
+        ret = posicao - load.tamMax;
+    else if (posicao < multiplicador.tamMax)
+        ret = posicao - load.tamMax + store.tamMax;
+    else 
+        ret = posicao - load.tamMax + store.tamMax + somador.tamMax;
+    
+    return ret;
+}
+
+void registradorMudaQI(Registrador reg[], int posicao, int id, int estacao, TipoComponente tipo){
+    estacao = codificaEstacao(estacao, tipo);
+    reg[posicao].qi = estacao;
+    reg[posicao].id = id;
+}
+
+int registradorObterQI(Registrador reg[], int posicao){
+    return reg[posicao].qi;
+    //return decodificaEstacao(registrador[posicao].qi);
+}
+
+void registradorEscreve(Registrador reg[], int posicao, int64_t valor){
+    reg[posicao].valor = valor;
+    reg[posicao].qi = -1;
+    reg[posicao].id = -1;
+}
+
+int procuraRegistrador(Registrador reg[], int estacao, TipoComponente tipo){
+    estacao = codificaEstacao(estacao, tipo);
+    int i;
+    for (i = 0; i < NUM_REGISTRADOR; i++){
+        if (reg[i].qi == estacao){
+            return i;
+        }
+    }
+    return -1;
+}
+
+/* BARRAMENTO */
+void inicializaBarramento(CDB *barramento, int tam_load, int tam_store, int tam_somador, int tam_mult){
+    barramento->tamMax = tam_load + tam_store + tam_somador + tam_mult;
+    barramento->campo = (CampoBarramento*)calloc(barramento->tamMax, sizeof(CampoBarramento));
+}
+
+void barramentoInsere(CDB *barramento, int64_t dado, int id, int posicao, TipoComponente tipo){
+    posicao = codificaEstacao(posicao, tipo);
+    barramento->campo[posicao].dado = dado;
+    barramento->campo[posicao].id = id;
+}
+
+int barramentoObterDado(CDB barramento, int posicao){
+    return barramento.campo[posicao].dado;
+}
+
+void barramentoLimpar(CDB *barramento){
+    //printf("%d\n", barramento->tamMax*sizeof(CampoBarramento));
+   /* int i;
+    for (i = 0; i < barramento->tamMax; ++i) {
+        barramento->campo[i].dado = -1;
+        barramento->campo[i].id = -1;
+    }*/
+    memset(barramento->campo, -1, barramento->tamMax*sizeof(CampoBarramento));
 }
