@@ -39,6 +39,7 @@ int id;
 /* REGISTRADORES ESPECÍFICOS */
 int pc;
 bool flag_jmp;
+int offset_jmp;
 
 /* VARIÁVEIS PARA PRINT */
 
@@ -86,61 +87,61 @@ void printCiclo(){
     num = MAX(num_emitidas, MAX(num_print_er, MAX(num_print_uf, MAX(num_print_bf, MAX(num_print_ue, MAX(num_print_esc, num_print_mem))))));
 
     printf("\nCICLO: %d\n", cont_ciclos);
-    printf("%-20s | %-20s | %-20s | %-20s | %-20s | %-20s | %-20s |\n", "EMISSAO", "UNIDADE DE ENDERECO", "BUFFER LOAD/STORE", "ESTACAO DE RESERVA", "UNIDADE FUNCIONAL", "MEMORIA", "ESCRITA");
-    printf("---------------------|----------------------|----------------------|----------------------|----------------------|----------------------|----------------------|\n");
+    printf("%-22s | %-22s | %-22s | %-22s | %-22s | %-22s | %-22s |\n", "EMISSAO", "UNIDADE DE ENDERECO", "BUFFER LOAD/STORE", "ESTACAO DE RESERVA", "UNIDADE FUNCIONAL", "MEMORIA", "ESCRITA");
+    printf("-----------------------|------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|\n");
     for (i = 0; i < num; ++i) {
         /* EMITIDAS */
         if (num_emitidas <= i)
             strcpy(str, "---");
         else
             strcpy(str, instToString(print_emitidas[i]));
-        printf("%-20s | ", str);
+        printf("%-22s | ", str);
 
         /* UNIDADE DE ENDEREÇO */
         if (num_print_ue <= i)
             strcpy(str, "---");     
         else
             strcpy(str, print_ue);
-        printf("%-20s | ", str);
+        printf("%-22s | ", str);
 
         /* BUFFER LOAD/STORE*/
         if (num_print_bf <= i)
             strcpy(str, "---");
         else
             strcpy(str, print_bf[i]);
-        printf("%-20s | ", str);
+        printf("%-22s | ", str);
             
         /* ESTAÇÃO DE RESERVA */
         if (num_print_er <= i)
             strcpy(str, "---");
         else
             strcpy(str, print_er[i]);
-        printf("%-20s | ", str);
+        printf("%-22s | ", str);
 
         /* UNIDADE FUNCIONAL */
         if (num_print_uf <= i)
             strcpy(str, "---");
         else
             strcpy(str, print_uf[i]);
-        printf("%-20s | ", str);
+        printf("%-22s | ", str);
 
         /* UNIDADE DE ENDEREÇO */
         if (num_print_mem <= i)
             strcpy(str, "---");     
         else
             strcpy(str, print_mem);
-        printf("%-20s | ", str);
+        printf("%-22s | ", str);
 
         /* ESCRITA */
         if (num_print_esc <= i)
             strcpy(str, "---");
         else
             strcpy(str, print_esc[i]);
-        printf("%-20s | ", str);
+        printf("%-22s | ", str);
 
         printf("\n");        
     }
-    printf("---------------------|----------------------|----------------------|----------------------|----------------------|----------------------|----------------------|\n\n");
+    printf("-----------------------|------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|\n");
     printRegistrador();
     printMemoria();
 }
@@ -233,7 +234,7 @@ void inserePrintMEM(MemoriaExec mem_exec){
 bool busca(){
     Instrucao inst;
     int i;
-    for (i = 0; i < qtd_busca_inst && !filaEstaCheia(fila); i++){
+    for (i = 0; i < qtd_busca_inst && !filaEstaCheia(fila) && !flag_jmp; i++){
         inst = memoriaObterInst(pc);    //busca a proxima inst
         inst.id = id++;                 //id para dependencias
         switch (inst.opcode){
@@ -251,10 +252,9 @@ bool busca(){
             case BG:
             case BGE:
             case BL:
-            case BLE:
-                //QUANDO FOR JMP NAO PODE BUSCAR OUTRAS INSTRUÇÕES ENQUANTO NAO EXECUTAR O JMP
+            case BLE:                
                 filaInsere(fila, inst);
-                pc++;
+                flag_jmp = true;
                 break;
             default:
                 filaInsere(fila, inst);
@@ -500,16 +500,46 @@ bool execucao(){
                 vk = somador.un_funcional[i].vk;
                 switch (somador.un_funcional[i].opcode){
                     case BEQ:
+                        if (vj == vk)
+                            pc += offset_jmp;
+                        else 
+                            pc++;
+                        flag_jmp = false;
                         break;
                     case BNE:
+                        if (vj != vk)
+                            pc += offset_jmp;
+                        else 
+                            pc++;
+                        flag_jmp = false;
                         break;
                     case BG: 
+                        if (vj > vk)
+                            pc += offset_jmp;
+                        else 
+                            pc++;
+                        flag_jmp = false;
                         break;
                     case BGE:
+                        if (vj >= vk)
+                            pc += offset_jmp;
+                        else 
+                            pc++;
+                        flag_jmp = false;
                         break;
                     case BL: 
+                        if (vj < vk)
+                            pc += offset_jmp;
+                        else 
+                            pc++;
+                        flag_jmp = false;
                         break;
                     case BLE:
+                        if (vj <= vk)
+                            pc += offset_jmp;
+                        else 
+                            pc++;
+                        flag_jmp = false;
                         break;
                     case LI:
                     case ADD:
@@ -577,40 +607,46 @@ bool execucao(){
             if (!somador.un_funcional[i].busy && er_somador.est_reserva[i].qj == -1 && er_somador.est_reserva[i].qk == -1){                
                 switch (er_somador.est_reserva[i].opcode){
                      case LI:
-                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, LI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_li);
-                         break;
+                        uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, LI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_li);
+                        break;
                      case BEQ:
-                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BEQ, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_beq);
-                         break;
+                        offset_jmp = er_somador.est_reserva[i].A;
+                        uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BEQ, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_beq);
+                        break;
                      case BNE:
-                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BNE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bne);
-                         break;
+                        offset_jmp = er_somador.est_reserva[i].A;
+                        uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BNE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bne);
+                        break;
                      case BG:
-                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BG, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bg);
-                         break;
+                        offset_jmp = er_somador.est_reserva[i].A;
+                        uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BG, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bg);
+                        break;
                      case BGE:
-                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BGE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bge);
-                         break;
+                        offset_jmp = er_somador.est_reserva[i].A;
+                        uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BGE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bge);
+                        break;
                      case BL:
-                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BL, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bl);
-                         break;
+                        offset_jmp = er_somador.est_reserva[i].A;
+                        uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BL, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_bl);
+                        break;
                      case BLE:
-                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BLE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_ble);
-                         break;
+                        offset_jmp = er_somador.est_reserva[i].A;
+                        uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, BLE, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_ble);
+                        break;
                      case ADD:
-                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, ADD, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_add);
-                         break;
+                        uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, ADD, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_add);
+                        break;
                      case ADDI:
-                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, ADDI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_addi);
-                         break;
+                        uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, ADDI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_addi);
+                        break;
                      case SUB:
-                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, SUB, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_sub);
-                         break;
+                        uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, SUB, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_sub);
+                        break;
                      case SUBI:
-                         uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, SUBI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_subi);
-                         break;
+                        uFuncionalInsere(&somador, i, er_somador.est_reserva[i].id, SUBI, er_somador.est_reserva[i].vj, er_somador.est_reserva[i].vk, ciclo_subi);
+                        break;
                      default:
-                         break;
+                        break;
                 }
                 estacaoRemove(&er_somador, i);
             }
@@ -649,6 +685,7 @@ bool execucao(){
         }
     }
     
+    /* VERIFICA LOAD/STORE */
     if (load.buffer[0].busy && store.buffer[0].busy && !mem_exec.busy){
         if (load.buffer[0].id < store.buffer[0].id){
             memoriaExecInsere(&mem_exec, load.buffer[0].id, load.buffer[0].opcode, load.buffer[0].origem, load.buffer[0].destino, ciclo_ld);

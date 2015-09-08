@@ -6,7 +6,7 @@ ARQUITETURA:
     buffer de carga = 3
     buffer de escrita = 5
     emissao = 2
-    memoria = 100
+    memoria = 500
     imemoria = 0, 20
 
 CICLOS:
@@ -29,10 +29,18 @@ CICLOS:
     li = 1
 
 Texto:
-ld R1, 0
-li R0, 500
-sd 10, R0
+add R0, R1, R30
+addi R0, R2, -100
+mult R20, R25, R27
+bge R4, R5, -1
+sub R7, R8, R9
+ld R10, 10
+li R5, -2042
+mult R11, R12, R13
+divi R15, R16, 1
+add R18, R19, R20
+sd 12, R25
 exit
 
 Dados:
-200  2 -3
+1  2 -3

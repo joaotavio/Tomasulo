@@ -37,7 +37,7 @@ typedef struct unidade_funcional {
 	int id;
 	Operacoes opcode;
 	int vj;
-	int vk;
+	int vk;	
 	bool busy;
 	int ciclos;
 } UnidadeFuncional;
