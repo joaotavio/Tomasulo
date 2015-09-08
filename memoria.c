@@ -4,6 +4,7 @@
 #include "tomasulo.h"
 #include "util.h"
 
+MemoriaExec mem_exec;
 uint8_t* memoria;
 int tam_memoria;
 
@@ -65,12 +66,36 @@ int memoriaObterDado(int posicao){
     return valor;
 }
 
-void printMemoria(){
-    char str[64] = "";
-    int i;
-    printf("\nMEMORIA:\n");
-    for (i = 0; i < tam_memoria; i++){
-        binarioParaString(memoria[i], str);
-        printf("[%d]: - %s\n", i, str);
+void memoriaExecInsere(MemoriaExec *mem_exec, int id, Operacoes opcode, int origem, int destino, int ciclos){
+    mem_exec->id = id;
+    mem_exec->opcode = opcode;
+    mem_exec->origem = origem;
+    mem_exec->destino = destino;
+    mem_exec->ciclos = ciclos;
+    mem_exec->busy = true;
+}
+
+void memoriaExecRemove(MemoriaExec *mem_exec){
+    mem_exec->id = -1;
+    mem_exec->opcode = NOP;
+    mem_exec->origem = 0;
+    mem_exec->destino = 0;
+    mem_exec->ciclos = 0;
+    mem_exec->busy = false;
+}
+
+char* memToString(MemoriaExec mem_exec){
+    char *str = malloc(sizeof(char)*MAX_STR_PRINT);
+    switch(mem_exec.opcode){
+        case LD:
+            sprintf(str, "ld R%d, [%d]", mem_exec.destino, mem_exec.origem);
+            break;
+        case SD:
+            sprintf(str, "sd [%d], R%d", mem_exec.destino, mem_exec.origem);
+            break;
+        default:
+            break;
     }
+
+    return str;
 }

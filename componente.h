@@ -49,9 +49,11 @@ typedef struct comp_unidade_funcional {
 } ComponenteUF;
 
 typedef struct buffer{
+	int id;
 	Operacoes opcode;
 	int origem;
 	int destino;
+	int q;
 	bool busy;
 } Buffer;
 
@@ -62,9 +64,11 @@ typedef struct comp_buffer {
 } ComponenteBuffer;
 
 typedef struct un_endereco{
+	int id;
 	Operacoes opcode;
 	int origem;
 	int destino;
+	int q;
 	bool busy;
 } UnidadeEndereco;
 
@@ -111,7 +115,7 @@ char* ufToString(UnidadeFuncional uf);
 
 /* BUFFER LOAD/STORE */
 void inicializaBuffer(ComponenteBuffer *buffer);
-void bufferInsere(ComponenteBuffer *buf, Operacoes opcode, int origem, int destino);
+void bufferInsere(ComponenteBuffer *buf, Operacoes opcode, int id, int origem, int destino, int q);
 int procuraBuffer(ComponenteBuffer buf);
 bool bufferCheio(ComponenteBuffer buf);
 int bufferLivre(ComponenteBuffer buf);
@@ -119,7 +123,7 @@ void bufferRemove(ComponenteBuffer *buf, int posicao);
 char* bfToString(Buffer buffer);
 
 /* UNIDADE DE ENDERECO*/
-void uEnderecoInsere(UnidadeEndereco *ue, Operacoes opcode, int origem, int destino);
+void uEnderecoInsere(UnidadeEndereco *ue, Operacoes opcode, int id, int origem, int destino, int q);
 void uEnderecoRemove(UnidadeEndereco *ue);
 bool uEnderecoCheia();
 char* ueToString(UnidadeEndereco ue);
@@ -129,7 +133,8 @@ void inicializaRegistrador(Registrador reg[]);
 void registradorMudaQI(Registrador reg[], int posicao, int id, int estacao, TipoComponente tipo);
 int registradorObterQI(Registrador reg[], int posicao);
 void registradorEscreve(Registrador reg[], int posicao, int64_t valor);
-int procuraRegistrador(Registrador reg[], int estacao, TipoComponente tipo);
+int procuraRegistrador(Registrador reg[], int estacao);
+char* qiToString(int estacao);
 
 /* BARRAMENTO */
 void inicializaBarramento(CDB *barramento, int tam_load, int tam_store, int tam_somador, int tam_mult);

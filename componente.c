@@ -231,10 +231,12 @@ void inicializaBuffer(ComponenteBuffer *buf){
     buf->tam = 0;
 }
 
-void bufferInsere(ComponenteBuffer *buf, Operacoes opcode, int origem, int destino){
+void bufferInsere(ComponenteBuffer *buf, Operacoes opcode, int id, int origem, int destino, int q){
+    buf->buffer[buf->tam].id = id;
     buf->buffer[buf->tam].opcode = opcode;
 	buf->buffer[buf->tam].origem = origem;
     buf->buffer[buf->tam].destino = destino;
+    buf->buffer[buf->tam].q = q;
     buf->buffer[buf->tam].busy = true;
     buf->tam++;
 }
@@ -258,19 +260,25 @@ int bufferLivre(ComponenteBuffer buf){
 	int i;
 	if(!bufferCheio(buf)){
 		for(i = 0; i < buf.tamMax; i++){
-				if(!buf.buffer[i].busy){
-					return i;
-				}
+			if(!buf.buffer[i].busy){
+				return i;
+			}
 		}
 	}
 	return -1;
 }
 
 void bufferRemove(ComponenteBuffer *buf, int posicao){
-	buf->buffer[posicao].opcode = NOP;
-	buf->buffer[posicao].origem = 0;
-	buf->buffer[posicao].destino = 0;
-	buf->buffer[posicao].busy = false;
+    int i;
+    for (i = 0; i < (buf->tam - 1); ++i){
+        buf->buffer[i] = buf->buffer[i+1];
+    }
+    buf->buffer[i].id = -1;
+	buf->buffer[i].opcode = NOP;
+	buf->buffer[i].origem = 0;
+	buf->buffer[i].destino = 0;
+    buf->buffer[i].q = -1;
+    buf->buffer[i].busy = false;
 	buf->tam--;
 }
 
@@ -278,10 +286,13 @@ char* bfToString(Buffer buffer){
 	char *str = malloc(sizeof(char)*MAX_STR_PRINT);
     switch(buffer.opcode){
         case LD:
-            sprintf(str, "ld [%d], %d", buffer.origem, buffer.destino);
+            sprintf(str, "ld R%d, [%d]", buffer.destino, buffer.origem);
             break;
         case SD:
-            sprintf(str, "sd %d, [%d]", buffer.origem, buffer.destino);
+            if (buffer.q == -1)
+                sprintf(str, "sd [%d], %d", buffer.destino, buffer.origem);
+            else
+                sprintf(str, "sd [%d], Q%d", buffer.destino, buffer.q);
             break;
         default:
             break;
@@ -291,17 +302,21 @@ char* bfToString(Buffer buffer){
 }
 
 /*UNIDADE DE ENDERECO*/
-void uEnderecoInsere(UnidadeEndereco *ue, Operacoes opcode, int origem, int destino){
+void uEnderecoInsere(UnidadeEndereco *ue, Operacoes opcode, int id, int origem, int destino, int q){
+    ue->id = id;
 	ue->opcode = opcode;
 	ue->origem = origem;
 	ue->destino = destino;
+    ue->q = q;
 	ue->busy = true;
 }
 
 void uEnderecoRemove(UnidadeEndereco *ue){
+    ue->id = -1;
 	ue->opcode = NOP;
 	ue->origem = 0;
 	ue->destino = 0;
+    ue->q = -1;
 	ue->busy = false;
 }
 
@@ -313,10 +328,10 @@ char* ueToString(UnidadeEndereco ue){
 	char *str = malloc(sizeof(char)*MAX_STR_PRINT);
     switch(ue.opcode){
         case LD:
-            sprintf(str, "ld [%d], %d", ue.origem, ue.destino);
+            sprintf(str, "ld R%d, [%d]", ue.destino, ue.origem);
             break;
         case SD:
-            sprintf(str, "sd %d, [%d]", ue.origem, ue.destino);
+            sprintf(str, "sd [%d], R%d", ue.destino, ue.origem);
             break;
         default:
             break;
@@ -383,8 +398,7 @@ void registradorEscreve(Registrador reg[], int posicao, int64_t valor){
     reg[posicao].id = -1;
 }
 
-int procuraRegistrador(Registrador reg[], int estacao, TipoComponente tipo){
-    estacao = codificaEstacao(estacao, tipo);
+int procuraRegistrador(Registrador reg[], int estacao){
     int i;
     for (i = 0; i < NUM_REGISTRADOR; i++){
         if (reg[i].qi == estacao){
@@ -392,6 +406,21 @@ int procuraRegistrador(Registrador reg[], int estacao, TipoComponente tipo){
         }
     }
     return -1;
+}
+
+char* qiToString(int estacao){
+    char *str = malloc(sizeof(char)*MAX_STR_PRINT);
+
+    if (estacao < load.tamMax)
+        sprintf(str, "BL%d", estacao);
+    else if (estacao < store.tamMax + load.tamMax)
+        sprintf(str, "BS%d", estacao - load.tamMax);
+    else if (estacao < somador.tamMax + store.tamMax + load.tamMax)
+        sprintf(str, "ES%d", estacao - (load.tamMax + store.tamMax));
+    else 
+        sprintf(str, "EM%d", estacao - (load.tamMax + store.tamMax + somador.tamMax));
+        
+    return str;    
 }
 
 /* BARRAMENTO */
@@ -406,16 +435,6 @@ void barramentoInsere(CDB *barramento, int64_t dado, int id, int posicao, TipoCo
     barramento->campo[posicao].id = id;
 }
 
-int barramentoObterDado(CDB barramento, int posicao){
-    return barramento.campo[posicao].dado;
-}
-
 void barramentoLimpar(CDB *barramento){
-    //printf("%d\n", barramento->tamMax*sizeof(CampoBarramento));
-   /* int i;
-    for (i = 0; i < barramento->tamMax; ++i) {
-        barramento->campo[i].dado = -1;
-        barramento->campo[i].id = -1;
-    }*/
     memset(barramento->campo, -1, barramento->tamMax*sizeof(CampoBarramento));
 }

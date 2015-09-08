@@ -33,7 +33,6 @@ extern int ciclo_ble;
 extern int ciclo_bg;
 extern int ciclo_bge;
 extern int ciclo_li;
-extern int ciclo_lui;
 
 extern int cont_ciclos;
 
