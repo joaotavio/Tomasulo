@@ -5,7 +5,6 @@
 #include "instrucao.h"
 #include "fila.h"
 
-#define MAX_RESERVA 100
 #define	NUM_REGISTRADOR 32
 
 typedef enum tipo_componente {LOAD, STORE, SOMADOR, MULTIPLICADOR} TipoComponente;

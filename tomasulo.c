@@ -6,8 +6,6 @@
 
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
-/*** VARIÁVEIS GLOBAIS ***/
-
 int tam_fila;
 int qtd_busca_inst;
 int qtd_emissao;
@@ -42,7 +40,6 @@ bool flag_jmp;
 int offset_jmp;
 
 /* VARIÁVEIS PARA PRINT */
-
 Instrucao *print_emitidas;
 int num_emitidas;
 char **print_er;
@@ -59,91 +56,91 @@ char **print_esc;
 int num_print_esc;
 
 /* FUNÇÕES PARA PRINT */
-void printRegistrador(){
+void printRegistrador(FILE* arq_saida){
     int i;
-    printf("REGISTRADORES: \n");
+    fprintf(arq_saida, "REGISTRADORES: \n");
     for(i = 0; i < NUM_REGISTRADOR/2; i++){
-        printf("R%d = %"PRId64" | ", i, registrador[i].valor);
+        fprintf(arq_saida, "R%d = %"PRId64" | ", i, registrador[i].valor);
     }
-    printf("\n");
+    fprintf(arq_saida, "\n");
     for(i = NUM_REGISTRADOR/2; i < NUM_REGISTRADOR; i++){
-        printf("R%d = %"PRId64" | ", i, registrador[i].valor);
+        fprintf(arq_saida, "R%d = %"PRId64" | ", i, registrador[i].valor);
     }
-    printf("\n\n");
+    fprintf(arq_saida, "\n\n");
 }
 
-void printMemoria(){
+void printMemoria(FILE* arq_saida){
     int i;
-    printf("MEMORIA: \n");
+    fprintf(arq_saida, "MEMORIA: \n");
     for (i = intervalo_mem_x; i <= intervalo_mem_y; ++i) {
-        printf("[%d] = %d | ", i, memoriaObterDado(i));
+        fprintf(arq_saida, "[%d] = %d | ", i, memoriaObterDado(i));
     }
-    printf("\n\n");
+    fprintf(arq_saida, "\n\n");
 }
 
-void printCiclo(){
+void printCiclo(FILE* arq_saida){
     int i, num;
     char str[MAX_STR_PRINT];
     num = MAX(num_emitidas, MAX(num_print_er, MAX(num_print_uf, MAX(num_print_bf, MAX(num_print_ue, MAX(num_print_esc, num_print_mem))))));
 
-    printf("\nCICLO: %d\n", cont_ciclos);
-    printf("%-22s | %-22s | %-22s | %-22s | %-22s | %-22s | %-22s |\n", "EMISSAO", "UNIDADE DE ENDERECO", "BUFFER LOAD/STORE", "ESTACAO DE RESERVA", "UNIDADE FUNCIONAL", "MEMORIA", "ESCRITA");
-    printf("-----------------------|------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|\n");
+    fprintf(arq_saida, "\nCICLO: %d\n", cont_ciclos);
+    fprintf(arq_saida, "%-22s | %-22s | %-22s | %-22s | %-22s | %-22s | %-22s |\n", "EMISSAO", "UNIDADE DE ENDERECO", "BUFFER LOAD/STORE", "ESTACAO DE RESERVA", "UNIDADE FUNCIONAL", "MEMORIA", "ESCRITA");
+    fprintf(arq_saida, "-----------------------|------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|\n");
     for (i = 0; i < num; ++i) {
         /* EMITIDAS */
         if (num_emitidas <= i)
             strcpy(str, "---");
         else
             strcpy(str, instToString(print_emitidas[i]));
-        printf("%-22s | ", str);
+        fprintf(arq_saida, "%-22s | ", str);
 
         /* UNIDADE DE ENDEREÇO */
         if (num_print_ue <= i)
             strcpy(str, "---");     
         else
             strcpy(str, print_ue);
-        printf("%-22s | ", str);
+        fprintf(arq_saida, "%-22s | ", str);
 
         /* BUFFER LOAD/STORE*/
         if (num_print_bf <= i)
             strcpy(str, "---");
         else
             strcpy(str, print_bf[i]);
-        printf("%-22s | ", str);
+        fprintf(arq_saida, "%-22s | ", str);
             
         /* ESTAÇÃO DE RESERVA */
         if (num_print_er <= i)
             strcpy(str, "---");
         else
             strcpy(str, print_er[i]);
-        printf("%-22s | ", str);
+        fprintf(arq_saida, "%-22s | ", str);
 
         /* UNIDADE FUNCIONAL */
         if (num_print_uf <= i)
             strcpy(str, "---");
         else
             strcpy(str, print_uf[i]);
-        printf("%-22s | ", str);
+        fprintf(arq_saida, "%-22s | ", str);
 
         /* UNIDADE DE ENDEREÇO */
         if (num_print_mem <= i)
             strcpy(str, "---");     
         else
             strcpy(str, print_mem);
-        printf("%-22s | ", str);
+        fprintf(arq_saida, "%-22s | ", str);
 
         /* ESCRITA */
         if (num_print_esc <= i)
             strcpy(str, "---");
         else
             strcpy(str, print_esc[i]);
-        printf("%-22s | ", str);
+        fprintf(arq_saida, "%-22s | ", str);
 
-        printf("\n");        
+        fprintf(arq_saida, "\n");        
     }
-    printf("-----------------------|------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|\n");
-    printRegistrador();
-    printMemoria();
+    fprintf(arq_saida, "-----------------------|------------------------|------------------------|------------------------|------------------------|------------------------|------------------------|\n");
+    printRegistrador(arq_saida);
+    printMemoria(arq_saida);
 }
 
 void criaVetorPrint(){
@@ -154,6 +151,16 @@ void criaVetorPrint(){
     print_esc = (char**)calloc(load.tamMax + store.tamMax + somador.tamMax + multiplicador.tamMax, sizeof(char)*MAX_STR_PRINT);
     print_ue = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
     print_mem = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
+}
+
+void freePrints(){
+    free(print_emitidas);
+    free(print_er);
+    free(print_uf);
+    free(print_bf);
+    free(print_esc);
+    free(print_ue);
+    free(print_mem);
 }
 
 void inicializaPrint(){
@@ -211,6 +218,12 @@ void inserePrintESC(int valor, int reg, int estacao){
 void inserePrintEscSD(int destino, int valor){
     print_esc[num_print_esc] = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
     sprintf(print_esc[num_print_esc], "[%d] <- %d", destino, valor);
+    num_print_esc++;
+}
+
+void inserePrintEscJMP(int pc){
+    print_esc[num_print_esc] = (char*)malloc(sizeof(char)*MAX_STR_PRINT);
+    sprintf(print_esc[num_print_esc], "PC <- %d", pc);
     num_print_esc++;
 }
 
@@ -276,8 +289,6 @@ void verificaQI(int reg, int *q, int *v){
     }
 }
 
-//QUANDO FOR JUMP EMITIR NOP
-//retornar numero de emitidas, se for -1 nao emitiu nada(false)
 bool emissao(){
     int i, posicao, pos_anterior_somador = 0, pos_anterior_mult = 0;
     int qj, qk, vj, vk, A;
@@ -313,17 +324,17 @@ bool emissao(){
             case LI:
                 posicao = procuraUF(somador, pos_anterior_somador);
 
-                if (posicao == -1) //UF cheia
-                    posicao = procuraEstacao(er_somador); //procura ER livre
+                if (posicao == -1)
+                    posicao = procuraEstacao(er_somador);
                 else
-                    pos_anterior_somador = posicao + 1; //tem pos UF
+                    pos_anterior_somador = posicao + 1;
                 
-                if (posicao > -1 && !er_somador.est_reserva[posicao].busy){ //Se houver posicao e nao tiver dep.                       
+                if (posicao > -1 && !er_somador.est_reserva[posicao].busy){                  
                     filaRemove(fila, &inst);
                     vj = inst.op1;
-                    estacaoInsere(&er_somador, inst.id, inst.opcode, qj, qk, vj, vk, A, posicao); //Insere na ER
+                    estacaoInsere(&er_somador, inst.id, inst.opcode, qj, qk, vj, vk, A, posicao);
                     registradorMudaQI(registrador, inst.dest, inst.id, posicao, SOMADOR);
-                    foiEmitida = true; //Marca que foi emitida
+                    foiEmitida = true; 
                 }
                 break;
             case BEQ:
@@ -495,7 +506,7 @@ bool execucao(){
     int vj, vk;
     for (i = 0; i < somador.tamMax; ++i) {
         if (somador.un_funcional[i].busy){
-            if (somador.un_funcional[i].ciclos == 0){ //quando chegar no ciclo 0, realiza a operacao
+            if (somador.un_funcional[i].ciclos == 0){
                 vj = somador.un_funcional[i].vj;
                 vk = somador.un_funcional[i].vk;
                 switch (somador.un_funcional[i].opcode){
@@ -505,6 +516,7 @@ bool execucao(){
                         else 
                             pc++;
                         flag_jmp = false;
+                        inserePrintEscJMP(pc);
                         break;
                     case BNE:
                         if (vj != vk)
@@ -512,6 +524,7 @@ bool execucao(){
                         else 
                             pc++;
                         flag_jmp = false;
+                        inserePrintEscJMP(pc);
                         break;
                     case BG: 
                         if (vj > vk)
@@ -519,6 +532,7 @@ bool execucao(){
                         else 
                             pc++;
                         flag_jmp = false;
+                        inserePrintEscJMP(pc);
                         break;
                     case BGE:
                         if (vj >= vk)
@@ -526,6 +540,7 @@ bool execucao(){
                         else 
                             pc++;
                         flag_jmp = false;
+                        inserePrintEscJMP(pc);
                         break;
                     case BL: 
                         if (vj < vk)
@@ -533,6 +548,7 @@ bool execucao(){
                         else 
                             pc++;
                         flag_jmp = false;
+                        inserePrintEscJMP(pc);
                         break;
                     case BLE:
                         if (vj <= vk)
@@ -540,6 +556,7 @@ bool execucao(){
                         else 
                             pc++;
                         flag_jmp = false;
+                        inserePrintEscJMP(pc);
                         break;
                     case LI:
                     case ADD:
@@ -767,7 +784,7 @@ bool execucao(){
     return er_somador.tam > 0 || er_multiplicador.tam > 0 || load.tam > 0 || store.tam > 0 || flag_sd;
 }
 
-void iniciarTomasulo(){
+void iniciarTomasulo(FILE* arq_saida){
     pc = 0;
     cont_ciclos = 0;
     id = 0;
@@ -788,6 +805,8 @@ void iniciarTomasulo(){
             break;
 
         cont_ciclos++;
-        printCiclo();
+        printCiclo(arq_saida);
     }
+
+    freePrints();
 }

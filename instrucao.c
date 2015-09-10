@@ -186,9 +186,3 @@ char* instToString(Instrucao inst){
     }
     return str;
 }
-
-void printInstrucao(Instrucao inst){
-    char *str = instToString(inst);
-    printf("%s\n", str);
-    free(str);
-}

@@ -13,8 +13,7 @@ typedef int16_t imediato_t;
 typedef int32_t inst_t;
 typedef enum operacoes {LD, SD, LI, BEQ, BNE, BG, BGE, BL, BLE, JUMP, EXIT, ADD, ADDI, SUB, SUBI, MULT, MULTI, DIV, DIVI, NOP} Operacoes;
 
-typedef struct instrucao {
-    //guardar id da instrucao para quando tiver dependencia verdadeira
+typedef struct instrucao {    
     int id;
     Operacoes opcode;
     int dest;
@@ -25,12 +24,5 @@ typedef struct instrucao {
 inst_t instrucaoParaBinario(Instrucao inst);
 Instrucao binarioParaInstrucao(inst_t valor);
 char* instToString(Instrucao inst);
-void printInstrucao(Instrucao inst);
 
 #endif
-
-/* fazer funcao transformar binario aqui (receber string e retornar binario)
-
-
-
-*/

@@ -7,8 +7,6 @@
 #define NUM_COMPONENTES 9
 #define MAX_STR_PRINT 50
 
-/*** VARIÁVEIS GLOBAIS ***/
-
 extern int tam_fila;
 extern int qtd_busca_inst;
 extern int qtd_emissao;
@@ -34,8 +32,6 @@ extern int ciclo_bg;
 extern int ciclo_bge;
 extern int ciclo_li;
 
-extern int cont_ciclos;
-
-void iniciarTomasulo();
+void iniciarTomasulo(FILE* arq_saida);
 
 #endif

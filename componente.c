@@ -331,7 +331,10 @@ char* ueToString(UnidadeEndereco ue){
             sprintf(str, "ld R%d, [%d]", ue.destino, ue.origem);
             break;
         case SD:
-            sprintf(str, "sd [%d], R%d", ue.destino, ue.origem);
+            if (ue.q == -1)
+                sprintf(str, "sd [%d], %d", ue.destino, ue.origem);
+            else
+                sprintf(str, "sd [%d], Q%d", ue.destino, ue.q);
             break;
         default:
             break;
@@ -388,8 +391,7 @@ void registradorMudaQI(Registrador reg[], int posicao, int id, int estacao, Tipo
 }
 
 int registradorObterQI(Registrador reg[], int posicao){
-    return reg[posicao].qi;
-    //return decodificaEstacao(registrador[posicao].qi);
+    return reg[posicao].qi;    
 }
 
 void registradorEscreve(Registrador reg[], int posicao, int64_t valor){

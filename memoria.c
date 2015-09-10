@@ -91,7 +91,7 @@ char* memToString(MemoriaExec mem_exec){
             sprintf(str, "ld R%d, [%d]", mem_exec.destino, mem_exec.origem);
             break;
         case SD:
-            sprintf(str, "sd [%d], R%d", mem_exec.destino, mem_exec.origem);
+            sprintf(str, "sd [%d], %d", mem_exec.destino, mem_exec.origem);
             break;
         default:
             break;

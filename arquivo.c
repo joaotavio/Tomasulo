@@ -10,7 +10,7 @@
 
 #define MAX_TAM_LINHA 50
 
-bool decodificaComponente(FILE* arquivo, char str[], int valor){ //MUDAR NOME
+bool decodificaComponente(FILE* arquivo, char str[], int valor){
     strMinuscula(str);
 
     if (strcmp(str, "somador") == 0){
@@ -50,7 +50,6 @@ bool decodificaComponente(FILE* arquivo, char str[], int valor){ //MUDAR NOME
     return true;
 }
 
-//talvez fazer funcao generalizada para ler cabecalho
 bool lerCabecalhoArquitetura(FILE* arquivo){
     char buffer[MAX_TAM_LINHA];
     int valor;
@@ -78,7 +77,7 @@ bool lerCabecalhoArquitetura(FILE* arquivo){
     return true;
 }
 
-bool decodificaCiclo(char str[], int valor){ //MUDAR NOME
+bool decodificaCiclo(char str[], int valor){
     strMinuscula(str);
 
     if (strcmp(str, "add") == 0){
@@ -149,8 +148,7 @@ bool lerCabecalhoCiclos(FILE* arquivo){
     if (strcmp(buffer, "ciclos:") != 0)
         return false;
 
-    int i;
-    //NUM_OPERACOES - 3 POR CAUSA DA OPERACAO NOP, jump e exit
+    int i;    
     for (i = 0; i < NUM_OPERACOES - 3; ++i) {
         if (fscanf(arquivo, " %100[^=] %*[^0-9] %d", buffer, &valor) != 2)
             return false;
@@ -175,7 +173,7 @@ bool decodificaImediato(char str[], int *retorno){
     return true;
 }
 
-//MUDAR ESSE NOME TAMBEM
+
 bool decodificaOperando(char str[], int *retorno){
     char numero[strlen(str)];
     if (sscanf(str, "r%s", numero) == 1){
@@ -193,7 +191,7 @@ bool decodificaOperando(char str[], int *retorno){
     return true;
 }
 
-bool decodificaInstrucao(char str[], Instrucao *inst){ //mudar nome
+bool decodificaInstrucao(char str[], Instrucao *inst){
     strMinuscula(str);
     char *opcode;
     char *operandos[3];

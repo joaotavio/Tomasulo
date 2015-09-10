@@ -24,7 +24,6 @@ bool filaRemove(Fila f, Instrucao *retorno);
 Instrucao filaPrimeiro(Fila f);
 bool filaEstaVazia(Fila f);
 bool filaEstaCheia(Fila f);
-void mostraFila(Fila f);
 void esvazia(Fila f);
 void freeFila(Fila f);
 

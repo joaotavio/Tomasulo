@@ -60,14 +60,6 @@ bool filaEstaCheia(Fila f){
     return f->tam == f->tamMax;
 }
 
-void mostraFila(Fila f){
-    Celula *aux = f->inicio;
-    while (aux != NULL){
-        printInstrucao(aux->inst);
-        aux = aux->prox;
-    }
-}
-
 void esvazia(Fila f){
     Instrucao inst;
     while (f->tam > 0)

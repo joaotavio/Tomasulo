@@ -6,21 +6,6 @@
 #include <math.h>
 #include "util.h"
 
-void limpar_stdin(){
-    while (getchar() != '\n');
-}
-
-void pressEnter(){
-    printf("\nPressione ENTER para continuar...\n");
-    getchar();
-}
-
-void clrscr(){
-    int i;
-    for (i = 0; i < 30; ++i)
-        printf("\n\n");
-}
-
 void strMinuscula(char str[]){
     int i;
     for (i = 0; i < strlen(str); ++i)
@@ -74,11 +59,4 @@ void binarioParaString(int64_t valor, char str[]){
             str[i] = '0';
         valor >>= 1;
     }
-}
-
-void printBinario(int64_t valor){
-    char str[64];
-    itoa(valor, str, 2);
-    //binarioParaString(valor, str);
-    printf("%s\n", str);
 }

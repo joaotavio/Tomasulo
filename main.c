@@ -31,29 +31,32 @@ void iniciarComponentes(){
 }
 
 void iniciar(){
-    //lembrar de quando tentar abrir arquivo q nao existe tratar erro
-    FILE* arquivo;
-    arquivo = fopen("teste.txt", "r");
+    FILE* arq_entrada;
+    FILE* arq_saida;
+    arq_entrada = fopen(NOME_ARQ_ENTRADA, "r");
+    arq_saida = fopen(NOME_ARQ_SAIDA, "w");
 
-    if (!lerArquivo(arquivo)){
+    if (!lerArquivo(arq_entrada)){
         printf("\nERRO: Arquivo esta em um formato incorreto.\n");
-        fclose(arquivo);
+        fclose(arq_entrada);
         return;
     }
-    fclose(arquivo);
+    fclose(arq_entrada);
 
     iniciarComponentes();
-    iniciarTomasulo();
+    iniciarTomasulo(arq_saida);
     liberarComponentes();
 
-    printf("Execucao terminada...\n");
+    fclose(arq_saida);
+    printf("Execucao terminada com sucesso...\n");
+    printf("Arquivo de saida: saida.txt\n");    
 }
 
 int main(int argc, char const *argv[]) {
-    setlocale(LC_ALL,"");
 
     iniciar();
 
+    printf("\nPressione qualquer tecla para continuar...\n");
     getchar();
     return 0;
 }
